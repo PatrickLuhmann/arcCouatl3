@@ -9,6 +9,17 @@ namespace Couatl3_Model
 {
 	public class CouatlContext : DbContext
 	{
+		public DbSet<Account> Accounts { get; set; }
+		public DbSet<Transaction> Transactions { get; set; }
+		public DbSet<Price> Prices { get; set; }
+		public DbSet<Security> Securities { get; set; }
+		public DbSet<LotAssignment> LotAssignments { get; set; }
+
+		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+		{
+			// The path is relative to the main assembly (.exe).
+			optionsBuilder.UseSqlite(@"Data Source=couatl3.db");
+		}
 	}
 
 	public class Account
