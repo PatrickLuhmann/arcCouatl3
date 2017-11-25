@@ -26,12 +26,22 @@ namespace Couatl3_Model
 
 		public int Type { get; set; }
 		public int SecurityId { get; set; }
-		//TODO: Make sure decimal actually works in EFCore. public decimal Quantity { get; set; }
+		public decimal Quantity { get; set; }
+		public decimal Value { get; set; }
+		public decimal Fee { get; set; }
+		public DateTime Date { get; set; }
+
+		public int AccountId { get; set; }
+		public Account Account { get; set; }
 	}
 
 	public class Price
 	{
 		public int PriceId { get; set; }
+
+		public decimal Amount { get; set; }
+		public DateTime Date { get; set; }
+		public bool Closing { get; set; }
 
 	}
 
@@ -39,12 +49,17 @@ namespace Couatl3_Model
 	{
 		public int SecurityId { get; set; }
 
+		public string Name { get; set; }
+		public string Symbol { get; set; }
+
 	}
 
 	public class LotAssignment
 	{
 		public int LotAssignmentId { get; set; }
 
-		
+		public Transaction BuyTransaction { get; set; }
+		public Transaction SellTransaction { get; set; }
+		public decimal Quantity { get; set; }
 	}
 }
