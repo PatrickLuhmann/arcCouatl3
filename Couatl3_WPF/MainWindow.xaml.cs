@@ -24,7 +24,7 @@ namespace Couatl3_WPF
 		{
 			InitializeComponent();
 
-			FirstArea.Content = new AccountsView();
+			AccountListArea.Content = new AccountsView();
 		}
 	}
 }

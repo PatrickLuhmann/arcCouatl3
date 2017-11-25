@@ -6,25 +6,38 @@
              xmlns:local="clr-namespace:Couatl3_ViewModels;assembly=Couatl3_ViewModels"
              xmlns:vm="clr-namespace:Couatl3_ViewModels;assembly=Couatl3_ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="400" d:DesignWidth="500">
     <UserControl.DataContext>
         <vm:AccountsViewModel />
     </UserControl.DataContext>
+    <UserControl.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+    </UserControl.Resources>
 
     <Grid>
         <StackPanel>
+            <DockPanel LastChildFill="False">
+                <TextBlock DockPanel.Dock="Left" Text="Total Value Of All Accounts"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding TotalValue}"/>
+            </DockPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Total Value Of All Accounts</TextBlock>
-                <TextBlock Text="{Binding TotalValue}" Width="100"/>
+                <TextBlock Text="{Binding TotalValue}" Margin="50,0,0,0" TextAlignment="Right" Width="100"/>
             </StackPanel>
             <ListView Name="accountsListView" ItemsSource="{Binding AccountsList}">
                 <ListView.View>
-                    <GridView AllowsColumnReorder="False"
-                          ColumnHeaderToolTip="List of accounts">
+                    <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
                         <GridViewColumn DisplayMemberBinding="{Binding AccountName}"
-                                    Header="Account Name" Width="Auto"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding AccountValue}"
-                                    Header="Value" Width="Auto"/>
+                                    Header="Account Name" Width="345"/>
+                        <GridViewColumn Header="Value" Width="145">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding AccountValue}" TextAlignment="Right" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView>
                 </ListView.View>
             </ListView>

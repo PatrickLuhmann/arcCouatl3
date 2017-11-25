@@ -15,9 +15,9 @@ namespace Couatl3_ViewModels
 			// TODO: Remove this placeholder data.
 			totalValue = "12345.67";
 			accountsList = new List<Account>();
-			accountsList.Add(new Account { AccountName = "Name1", AccountValue = "123.45" });
-			accountsList.Add(new Account { AccountName = "Name1", AccountValue = "123.45" });
-			accountsList.Add(new Account { AccountName = "Name1", AccountValue = "123.45" });
+			accountsList.Add(new Account { AccountName = "Name1", AccountValue = "123.00" });
+			accountsList.Add(new Account { AccountName = "Name2", AccountValue = "$123123123.45" });
+			accountsList.Add(new Account { AccountName = "Name3", AccountValue = "111111.11" });
 		}
 
 		private string totalValue;

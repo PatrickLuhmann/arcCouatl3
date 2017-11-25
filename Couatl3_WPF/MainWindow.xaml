@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Couatl3_WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <ContentControl Name="FirstArea"/>
-    </Grid>
+        Title="MainWindow" Height="800" Width="1000">
+    <DockPanel>
+        <Border Background="SkyBlue" DockPanel.Dock="Right" Width="480" Name="ThirdArea"/>
+        <Border Background="PaleGreen" DockPanel.Dock="Top" Height="380" Name="FirstArea"/>
+        <Border Background="PaleGoldenrod">
+            <ContentControl Name="AccountListArea"/>
+        </Border>
+    </DockPanel>
 </Window>
