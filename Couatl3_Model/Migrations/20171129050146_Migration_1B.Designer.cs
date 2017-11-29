@@ -11,8 +11,8 @@ using System;
 namespace Couatl3_Model.Migrations
 {
     [DbContext(typeof(CouatlContext))]
-    [Migration("20171125182738_Migration_1")]
-    partial class Migration_1
+    [Migration("20171129050146_Migration_1B")]
+    partial class Migration_1B
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,7 +67,11 @@ namespace Couatl3_Model.Migrations
 
                     b.Property<DateTime>("Date");
 
+                    b.Property<int>("SecurityId");
+
                     b.HasKey("PriceId");
+
+                    b.HasIndex("SecurityId");
 
                     b.ToTable("Prices");
                 });
@@ -123,10 +127,18 @@ namespace Couatl3_Model.Migrations
                         .HasForeignKey("SellTransactionTransactionId");
                 });
 
+            modelBuilder.Entity("Couatl3_Model.Price", b =>
+                {
+                    b.HasOne("Couatl3_Model.Security", "Security")
+                        .WithMany()
+                        .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Couatl3_Model.Transaction", b =>
                 {
                     b.HasOne("Couatl3_Model.Account", "Account")
-                        .WithMany()
+                        .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

@@ -66,7 +66,11 @@ namespace Couatl3_Model.Migrations
 
                     b.Property<DateTime>("Date");
 
+                    b.Property<int>("SecurityId");
+
                     b.HasKey("PriceId");
+
+                    b.HasIndex("SecurityId");
 
                     b.ToTable("Prices");
                 });
@@ -122,10 +126,18 @@ namespace Couatl3_Model.Migrations
                         .HasForeignKey("SellTransactionTransactionId");
                 });
 
+            modelBuilder.Entity("Couatl3_Model.Price", b =>
+                {
+                    b.HasOne("Couatl3_Model.Security", "Security")
+                        .WithMany()
+                        .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Couatl3_Model.Transaction", b =>
                 {
                     b.HasOne("Couatl3_Model.Account", "Account")
-                        .WithMany()
+                        .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

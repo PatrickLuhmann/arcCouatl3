@@ -29,6 +29,8 @@ namespace Couatl3_Model
 		public string Institution { get; set; }
 		public string Name { get; set; }
 		public bool Closed { get; set; }
+
+		public List<Transaction> Transactions { get; set; }
 	}
 
 	public class Transaction
@@ -54,6 +56,8 @@ namespace Couatl3_Model
 		public DateTime Date { get; set; }
 		public bool Closing { get; set; }
 
+		public int SecurityId { get; set; }
+		public Security Security { get; set; }
 	}
 
 	public class Security
@@ -62,7 +66,6 @@ namespace Couatl3_Model
 
 		public string Name { get; set; }
 		public string Symbol { get; set; }
-
 	}
 
 	public class LotAssignment

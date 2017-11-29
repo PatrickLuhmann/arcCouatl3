@@ -11,6 +11,15 @@ namespace UnitTest_Couatl3_Model
 	[TestClass]
 	public class UnitTest1
 	{
+		[ClassInitialize]
+		public static void CreateAndMigrateDatabase(TestContext context)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Database.Migrate();
+			}
+		}
+
 		[TestMethod]
 		public void CreateAccount()
 		{
@@ -18,7 +27,7 @@ namespace UnitTest_Couatl3_Model
 			{
 				// I don't know if I need to do this.
 				// TODO: If this is necessary, put it in the "run before each test" method.
-				db.Database.Migrate();
+				//db.Database.Migrate();
 
 				int numAccountsBefore = db.Accounts.Count();
 
@@ -40,11 +49,34 @@ namespace UnitTest_Couatl3_Model
 		}
 
 		[TestMethod]
+		public void CreateSecurity()
+		{
+			using (var db = new CouatlContext())
+			{
+				int numSecBefore = db.Securities.Count();
+
+				Security newSec = new Security
+				{
+					Name = "Acme Inc.",
+					Symbol = "ACME"
+				};
+				db.Securities.Add(newSec);
+
+				int numRecordsChanged = db.SaveChanges();
+				int numSecAfter = db.Securities.Count();
+
+				Assert.AreEqual(1, numRecordsChanged);
+				Assert.AreEqual(numSecAfter, numSecBefore + 1);
+				Assert.AreNotEqual(0, newSec.SecurityId);
+			}
+		}
+
+		[TestMethod]
 		public void AddTransaction()
 		{
 			using (var db = new CouatlContext())
 			{
-				db.Database.Migrate();
+				//db.Database.Migrate();
 				
 				Account newAcct = new Account
 				{
@@ -71,6 +103,10 @@ namespace UnitTest_Couatl3_Model
 
 				Assert.AreEqual(2, count);
 				Assert.AreEqual(newAcct.AccountId, newXact.AccountId);
+				// Note that the List<Transactions> did not need to be explicitly allocated
+				// because the relationship was created from the Transaction side.
+				Assert.AreEqual(1, newAcct.Transactions.Count);
+				Assert.AreEqual(newXact, newAcct.Transactions[0]);
 
 				// Add another transaction with the already-existing account.
 				newXact = new Transaction
@@ -91,6 +127,8 @@ namespace UnitTest_Couatl3_Model
 
 				Assert.AreEqual(1, count);
 				Assert.AreEqual(newAcct.AccountId, newXact.AccountId);
+				Assert.AreEqual(2, newAcct.Transactions.Count);
+				Assert.AreEqual(newXact, newAcct.Transactions[1]);
 			}
 		}
 
@@ -99,7 +137,7 @@ namespace UnitTest_Couatl3_Model
 		{
 			using (var db = new CouatlContext())
 			{
-				db.Database.Migrate();
+				//db.Database.Migrate();
 
 				Account newAcct = new Account
 				{
@@ -146,10 +184,38 @@ namespace UnitTest_Couatl3_Model
 				Debug.WriteLine("ID of new lot assignment: {0}", newLot.LotAssignmentId);
 
 				Assert.AreEqual(4, count);
-				Assert.AreEqual(newAcct.AccountId, newXact1.AccountId);
-				Assert.AreEqual(newAcct.AccountId, newXact2.AccountId);
+				Assert.AreEqual(newAcct.AccountId, newXact1.AccountId); // redundant check
+				Assert.AreEqual(newAcct.AccountId, newXact2.AccountId); // redundant check
 				Assert.AreEqual(newXact1, newLot.BuyTransaction);
 				Assert.AreEqual(newXact2, newLot.SellTransaction);
+			}
+		}
+
+		[TestMethod]
+		public void AddPrice()
+		{
+			using (var db = new CouatlContext())
+			{
+				Security newSec = new Security
+				{
+					Name = "Acme Inc.",
+					Symbol = "ACME"
+				};
+
+				Price newPrice = new Price
+				{
+					Amount = 12.34M,
+					Date = DateTime.Now,
+					Closing = true,
+					Security = newSec
+				};
+				db.Prices.Add(newPrice);
+
+				var count = db.SaveChanges();
+
+				Assert.AreEqual(2, count);
+				Assert.AreEqual(newSec, newPrice.Security);
+				Assert.AreEqual(newSec.SecurityId, newPrice.SecurityId);
 			}
 		}
 	}

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Couatl3_Model.Migrations
 {
-    public partial class Migration_1 : Migration
+    public partial class Migration_1B : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -21,21 +21,6 @@ namespace Couatl3_Model.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.AccountId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Prices",
-                columns: table => new
-                {
-                    PriceId = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Amount = table.Column<decimal>(nullable: false),
-                    Closing = table.Column<bool>(nullable: false),
-                    Date = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Prices", x => x.PriceId);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,6 +63,28 @@ namespace Couatl3_Model.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Prices",
+                columns: table => new
+                {
+                    PriceId = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Amount = table.Column<decimal>(nullable: false),
+                    Closing = table.Column<bool>(nullable: false),
+                    Date = table.Column<DateTime>(nullable: false),
+                    SecurityId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Prices", x => x.PriceId);
+                    table.ForeignKey(
+                        name: "FK_Prices_Securities_SecurityId",
+                        column: x => x.SecurityId,
+                        principalTable: "Securities",
+                        principalColumn: "SecurityId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LotAssignments",
                 columns: table => new
                 {
@@ -115,6 +122,11 @@ namespace Couatl3_Model.Migrations
                 column: "SellTransactionTransactionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Prices_SecurityId",
+                table: "Prices",
+                column: "SecurityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_AccountId",
                 table: "Transactions",
                 column: "AccountId");
@@ -129,10 +141,10 @@ namespace Couatl3_Model.Migrations
                 name: "Prices");
 
             migrationBuilder.DropTable(
-                name: "Securities");
+                name: "Transactions");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "Securities");
 
             migrationBuilder.DropTable(
                 name: "Accounts");
