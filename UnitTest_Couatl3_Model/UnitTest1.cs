@@ -77,7 +77,7 @@ namespace UnitTest_Couatl3_Model
 			using (var db = new CouatlContext())
 			{
 				//db.Database.Migrate();
-				
+
 				Account newAcct = new Account
 				{
 					Institution = "Bank Of Tenochtitlan",
@@ -194,29 +194,40 @@ namespace UnitTest_Couatl3_Model
 		[TestMethod]
 		public void AddPrice()
 		{
+			Security newSec = new Security
+			{
+				Name = "Acme Inc.",
+				Symbol = "ACME"
+			};
+
+			Price newPrice = new Price
+			{
+				Amount = 12.34M,
+				Date = DateTime.Now,
+				Closing = true,
+				Security = newSec
+			};
+
+			int count = -1;
 			using (var db = new CouatlContext())
 			{
-				Security newSec = new Security
-				{
-					Name = "Acme Inc.",
-					Symbol = "ACME"
-				};
-
-				Price newPrice = new Price
-				{
-					Amount = 12.34M,
-					Date = DateTime.Now,
-					Closing = true,
-					Security = newSec
-				};
 				db.Prices.Add(newPrice);
-
-				var count = db.SaveChanges();
-
-				Assert.AreEqual(2, count);
-				Assert.AreEqual(newSec, newPrice.Security);
-				Assert.AreEqual(newSec.SecurityId, newPrice.SecurityId);
+				count = db.SaveChanges();
 			}
+
+			Assert.AreEqual(2, count);
+			Assert.AreEqual(newSec, newPrice.Security);
+			Assert.AreEqual(newSec.SecurityId, newPrice.SecurityId);
+
+			List<Price> prices;
+			using (var db = new CouatlContext())
+			{
+				prices = db.Prices.Where(p => p.Security == newSec).ToList();
+			}
+			Assert.AreEqual(1, prices.Count);
+			Assert.AreEqual(12.34M, prices[0].Amount);
+			Assert.AreEqual(true, prices[0].Closing);
+			Assert.AreEqual(newSec.SecurityId, prices[0].SecurityId);
 		}
 	}
 }
