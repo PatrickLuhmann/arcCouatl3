@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Couatl3_Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Couatl3_WPF
 {
@@ -23,6 +25,13 @@ namespace Couatl3_WPF
 		public MainWindow()
 		{
 			InitializeComponent();
+
+			// TODO: See if there is a better place for this.
+			// TODO: Will this change if/when there is a New File command?
+			using (var db = new CouatlContext())
+			{
+				db.Database.Migrate();
+			}
 
 			AccountListArea.Content = new AccountsView();
 		}
