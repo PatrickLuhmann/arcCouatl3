@@ -7,6 +7,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Couatl3_Model
 {
+	public class CouatlModel
+	{
+		public Account AddAccount(string acctName, string instName)
+		{
+			Account NewAccount = new Account
+			{
+				Name = acctName,
+				Institution = instName,
+				Cash = 0.0M,
+				Closed = false,
+			};
+			Account AccountFromDb;
+			using (var db = new CouatlContext())
+			{
+				db.Accounts.Add(NewAccount);
+				db.SaveChanges();
+				AccountFromDb = db.Accounts.Single(a => a.AccountId == NewAccount.AccountId);
+			}
+			return AccountFromDb;
+		}
+
+		public List<Account> GetAccounts()
+		{
+			List<Account> Accounts;
+			using (var db = new CouatlContext())
+				Accounts = db.Accounts.Where(a => a.Closed == false).ToList();
+			return Accounts;
+		}
+	}
+
 	public class CouatlContext : DbContext
 	{
 		public DbSet<Account> Accounts { get; set; }
@@ -14,11 +44,27 @@ namespace Couatl3_Model
 		public DbSet<Price> Prices { get; set; }
 		public DbSet<Security> Securities { get; set; }
 		public DbSet<LotAssignment> LotAssignments { get; set; }
+		public DbSet<Position> Positions { get; set; }
+
+		static public decimal MostRecentValue(Security sec)
+		{
+			// TODO: POC code; replace with real code and unit tests.
+			return 1.2M;
+		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			// The path is relative to the main assembly (.exe).
 			optionsBuilder.UseSqlite(@"Data Source=couatl3.db");
+		}
+	}
+
+	public class Blah
+	{
+		static public decimal MostRecentValue(Security sec)
+		{
+			// TODO: POC code; replace with real code and unit tests.
+			return 1.2M;
 		}
 	}
 
@@ -28,9 +74,12 @@ namespace Couatl3_Model
 
 		public string Institution { get; set; }
 		public string Name { get; set; }
+		public decimal Cash { get; set; }
+		//public decimal Value { get; set; }
 		public bool Closed { get; set; }
 
-		public List<Transaction> Transactions { get; set; }
+		public List<Transaction> Transactions { get; set; } = new List<Transaction>();
+		public List<Position> Positions { get; set; } = new List<Position>();
 	}
 
 	public class Transaction
@@ -75,5 +124,14 @@ namespace Couatl3_Model
 		public Transaction BuyTransaction { get; set; }
 		public Transaction SellTransaction { get; set; }
 		public decimal Quantity { get; set; }
+	}
+
+	public class Position
+	{
+		public int PositionId { get; set; }
+
+		public decimal Quantity { get; set; }
+
+		public Security Security { get; set; }
 	}
 }

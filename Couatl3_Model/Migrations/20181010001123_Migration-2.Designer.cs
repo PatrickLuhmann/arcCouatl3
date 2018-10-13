@@ -3,14 +3,16 @@ using System;
 using Couatl3_Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Couatl3_Model.Migrations
 {
     [DbContext(typeof(CouatlContext))]
-    partial class CouatlContextModelSnapshot : ModelSnapshot
+    [Migration("20181010001123_Migration-2")]
+    partial class Migration2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

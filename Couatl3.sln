@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Couatl3_WPF", "Couatl3_WPF\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_Couatl3_Model", "UnitTest_Couatl3_Model\UnitTest_Couatl3_Model.csproj", "{634D2A5F-8682-4F1E-92D0-41824708C9F7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_ViewModel", "UnitTest_ViewModel\UnitTest_ViewModel.csproj", "{C321B113-B224-4084-9D47-6961B55206D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{634D2A5F-8682-4F1E-92D0-41824708C9F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{634D2A5F-8682-4F1E-92D0-41824708C9F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{634D2A5F-8682-4F1E-92D0-41824708C9F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C321B113-B224-4084-9D47-6961B55206D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C321B113-B224-4084-9D47-6961B55206D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C321B113-B224-4084-9D47-6961B55206D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C321B113-B224-4084-9D47-6961B55206D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

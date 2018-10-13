@@ -35,5 +35,13 @@ namespace Couatl3_WPF
 
 			AccountListArea.Content = new AccountsView();
 		}
+
+		private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
+		{
+			var dlg = new CreateAccountDialogBox();
+			dlg.Owner = this;
+
+			dlg.ShowDialog();
+		}
 	}
 }

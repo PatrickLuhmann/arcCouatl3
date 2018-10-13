@@ -23,29 +23,28 @@ namespace UnitTest_Couatl3_Model
 		[TestMethod]
 		public void CreateAccount()
 		{
-			using (var db = new CouatlContext())
-			{
-				// I don't know if I need to do this.
-				// TODO: If this is necessary, put it in the "run before each test" method.
-				//db.Database.Migrate();
+			// ASSEMBLE
+			string AcctName = "This is a new account";
+			string InstName = "The best brokerage ever";
+			CouatlModel TheModel = new CouatlModel();
+			List<Account> TheAccounts = TheModel.GetAccounts();
+			int CountBefore = TheAccounts.Count;
 
-				int numAccountsBefore = db.Accounts.Count();
+			// ACT
+			Account NewAccount = TheModel.AddAccount(AcctName, InstName);
+			TheAccounts = TheModel.GetAccounts();
+			int CountAfter = TheAccounts.Count;
+			Account account = TheAccounts.Last();
 
-				Account newAcct = new Account
-				{
-					Institution = "Bank Of Tenochtitlan",
-					Name = "Standard Brokerage Account",
-					Closed = false
-				};
-				db.Accounts.Add(newAcct);
-
-				int numRecordsChanged = db.SaveChanges();
-				int numAccountsAfter = db.Accounts.Count();
-
-				Assert.AreEqual(1, numRecordsChanged);
-				Assert.AreEqual(numAccountsAfter, numAccountsBefore + 1);
-				Assert.AreNotEqual(0, newAcct.AccountId);
-			}
+			// ASSERT
+			Assert.AreEqual(AcctName, NewAccount.Name);
+			Assert.AreEqual(InstName, NewAccount.Institution);
+			Assert.AreEqual(0.0M, NewAccount.Cash);
+			Assert.AreEqual(false, NewAccount.Closed);
+			Assert.AreEqual(0, NewAccount.Transactions.Count);
+			Assert.AreEqual(0, NewAccount.Positions.Count);
+			Assert.AreEqual(CountBefore + 1, TheAccounts.Count);
+			Assert.AreEqual(NewAccount.AccountId, account.AccountId);
 		}
 
 		[TestMethod]
