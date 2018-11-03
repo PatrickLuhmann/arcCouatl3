@@ -33,7 +33,7 @@ namespace Couatl3_WPF
 				db.Database.Migrate();
 			}
 
-			AccountListArea.Content = new AccountsView();
+			//AccountListArea.Content = new AccountsView();
 		}
 
 		private void CreateAccountButton_Click(object sender, RoutedEventArgs e)

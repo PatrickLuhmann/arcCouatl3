@@ -4,8 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Couatl3_WPF"
+        xmlns:vmvm="clr-namespace:Couatl3_ViewModels;assembly=Couatl3_ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1000">
+    <Window.DataContext>
+        <vmvm:MainViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <DataTemplate x:Key="AccountListTemplate">
+            <local:AccountsView/>
+        </DataTemplate>
+    </Window.Resources>
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="Auto">
             <Button Margin="5,5,5,5" Click="CreateAccountButton_Click">Create Account</Button>
@@ -14,7 +23,7 @@
         <Border Background="SkyBlue" DockPanel.Dock="Right" Width="480" Name="ThirdArea"/>
         <Border Background="PaleGreen" DockPanel.Dock="Top" Height="380" Name="FirstArea"/>
         <Border Background="PaleGoldenrod">
-            <ContentControl Name="AccountListArea"/>
+            <ContentControl Name="AccountListArea" ContentTemplate="{StaticResource AccountListTemplate}"/>
         </Border>
     </DockPanel>
 </Window>

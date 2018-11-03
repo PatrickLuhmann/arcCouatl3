@@ -134,6 +134,7 @@
   <ItemGroup>
     <Compile Include="AccountsViewModel.cs" />
     <Compile Include="AccountViewModel.cs" />
+    <Compile Include="MainViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

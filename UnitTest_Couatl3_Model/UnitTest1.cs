@@ -14,6 +14,7 @@ namespace UnitTest_Couatl3_Model
 		[ClassInitialize]
 		public static void CreateAndMigrateDatabase(TestContext context)
 		{
+			System.IO.File.Delete("couatl3.db");
 			using (var db = new CouatlContext())
 			{
 				db.Database.Migrate();
