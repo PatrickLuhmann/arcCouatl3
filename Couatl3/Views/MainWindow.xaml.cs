@@ -1,6 +1,4 @@
-﻿using Couatl3.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,12 +23,6 @@ namespace Couatl3
 		public MainWindow()
 		{
 			InitializeComponent();
-
-			// TODO: Move this to a ViewModel.
-			using (var db = new CouatlContext())
-			{
-				db.Database.Migrate();
-			}
 		}
 	}
 }
