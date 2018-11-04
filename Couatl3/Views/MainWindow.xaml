@@ -4,19 +4,25 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Couatl3"
+        xmlns:views="clr-namespace:Couatl3.Views"
         xmlns:vms="clr-namespace:Couatl3.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.DataContext>
         <vms:Main_VM/>
     </Window.DataContext>
+    <Window.Resources>
+        <DataTemplate x:Key="AccountTemplate">
+            <views:Account_View/>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button Command="{Binding RelayAddAccountCmd}">Add Account</Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <ListView ItemsSource="{Binding Accounts}">
+                <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
                             <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Name}" Header="Name"/>
@@ -24,9 +30,7 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <ListView>
-                    
-                </ListView>
+                <ContentControl Content="{Binding SelectedAccount}" ContentTemplate="{StaticResource AccountTemplate}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

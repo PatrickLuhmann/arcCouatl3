@@ -31,6 +31,20 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		private Account_VM selectedAccount;
+		public Account_VM SelectedAccount
+		{
+			get
+			{
+				return selectedAccount;
+			}
+			set
+			{
+				selectedAccount = value;
+				RaisePropertyChanged("SelectedAccount");
+			}
+		}
+
 		public RelayCommand RelayAddAccountCmd { get; set; }
 
 		private void AddAccount()
