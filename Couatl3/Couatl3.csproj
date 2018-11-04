@@ -179,6 +179,7 @@
     </Compile>
     <Compile Include="Migrations\CouatlContextModelSnapshot.cs" />
     <Compile Include="Models\CouatlContext.cs" />
+    <Compile Include="ViewModels\Account_VM.cs" />
     <Compile Include="ViewModels\Main_VM.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

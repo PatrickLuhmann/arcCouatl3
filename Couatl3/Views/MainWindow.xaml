@@ -11,6 +11,23 @@
         <vms:Main_VM/>
     </Window.DataContext>
     <Grid>
-        
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding RelayAddAccountCmd}">Add Account</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <ListView ItemsSource="{Binding Accounts}">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
+                            <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Name}" Header="Name"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Institution}" Header="Institution"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <ListView>
+                    
+                </ListView>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>
