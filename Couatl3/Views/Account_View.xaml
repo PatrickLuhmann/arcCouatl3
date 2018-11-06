@@ -4,8 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Couatl3.Views"
+             xmlns:views="clr-namespace:Couatl3.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <DataTemplate x:Key="EditXactTemplate">
+            <views:EditTransaction_View/>
+        </DataTemplate>
+    </UserControl.Resources>
     <Grid>
         <StackPanel>
             <TextBlock>
@@ -23,7 +29,7 @@
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="5,5,15,5">
                     <TextBlock>Positions</TextBlock>
-                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TheAccount.Positions}">
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyPositions}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Security.Name}" Header="Security"/>
                             <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
@@ -34,17 +40,19 @@
                 </StackPanel>
                 <StackPanel Margin="5,5,15,5">
                     <TextBlock>Transactions</TextBlock>
-                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TheAccount.Transactions}">
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Date}" Header="Date"/>
-                            <DataGridTextColumn Binding="{Binding Type}" Header="Type"/>
-                            <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
-                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
-                            <DataGridTextColumn Binding="{Binding Value}" Header="Value"/>
-                            <DataGridTextColumn Binding="{Binding Fee}" Header="Fee"/>
-                            <DataGridTextColumn Header="Cash Balance"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Date}" Header="Date"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Type}" Header="Type"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Quantity}" Header="Quantity"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Value}" Header="Value"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Fee}" Header="Fee"/>
+                            <DataGridTextColumn Binding="{Binding CashBalance}" Header="Cash Balance"/>
                         </DataGrid.Columns>
                     </DataGrid>
+                    <ContentControl Content="{Binding SelectedTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
+
                 </StackPanel>
             </StackPanel>
         </StackPanel>

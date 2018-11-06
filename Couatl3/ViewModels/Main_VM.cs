@@ -21,7 +21,15 @@ namespace Couatl3.ViewModels
 				ObservableCollection<Account_VM> items = new ObservableCollection<Account_VM>();
 				using (var db = new CouatlContext())
 				{
-					List<Account> openAccts = db.Accounts.Where(a => a.Closed == false).ToList();
+					// TODO: Figure out why this statement is needed.
+					// If I don't get the list of Securities here, the Transactions
+					// collection of the Account will have null for the Security.
+					List<Security> secList = db.Securities.ToList();
+					List<Account> openAccts = db.Accounts
+						.Where(a => a.Closed == false)
+						.Include(a => a.Transactions)
+						.Include(a => a.Positions)
+						.ToList();
 					foreach (Account acct in openAccts)
 					{
 						items.Add(new Account_VM(acct));
@@ -109,6 +117,27 @@ namespace Couatl3.ViewModels
 			//TODO: POC for add security
 			PocSecSym = "";
 			PocSecName = "";
+
+			//TODO: POC for showing transactions
+#if false
+			using (var db = new CouatlContext())
+			{
+				Transaction newXact = new Transaction
+				{
+					Type = 1,
+					Quantity = 123,
+					Value = 6156.95M,
+					Fee = 6.95M,
+					Date = DateTime.Now
+				};
+				newXact.Security = db.Securities.Single(s => s.Symbol == "ACME");
+				Account tgtAccont = db.Accounts.First();
+				tgtAccont.Transactions.Add(newXact);
+				//db.Transactions.Add(newXact);
+
+				db.SaveChanges();
+			}
+#endif
 		}
 	}
 }
