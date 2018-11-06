@@ -24,7 +24,7 @@ namespace Couatl3.ViewModels
 					List<Account> openAccts = db.Accounts.Where(a => a.Closed == false).ToList();
 					foreach (Account acct in openAccts)
 					{
-						items.Add(new Account_VM { TheAccount = acct });
+						items.Add(new Account_VM(acct));
 					}
 				}
 				return items;

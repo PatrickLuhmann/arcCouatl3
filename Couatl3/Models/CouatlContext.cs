@@ -23,6 +23,14 @@ namespace Couatl3.Models
 		}
 	}
 
+	public class ModelService
+	{
+		static public decimal GetNewestPrice(Security security)
+		{
+			return 0;
+		}
+	}
+
 	public class Account
 	{
 		public int AccountId { get; set; }

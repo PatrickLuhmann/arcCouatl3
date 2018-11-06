@@ -20,14 +20,33 @@
                 <Run Text="Cash: $"/>
                 <Run Text="{Binding TheAccount.Cash}"/>
             </TextBlock>
-            <TextBlock>Positions</TextBlock>
-            <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TheAccount.Positions}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Binding="{Binding Security.Name}" Header="Security"/>
-                    <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
-                    <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="5,5,15,5">
+                    <TextBlock>Positions</TextBlock>
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TheAccount.Positions}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Security.Name}" Header="Security"/>
+                            <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
+                            <DataGridTextColumn Header="Value"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+                <StackPanel Margin="5,5,15,5">
+                    <TextBlock>Transactions</TextBlock>
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding TheAccount.Transactions}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Date}" Header="Date"/>
+                            <DataGridTextColumn Binding="{Binding Type}" Header="Type"/>
+                            <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
+                            <DataGridTextColumn Binding="{Binding Value}" Header="Value"/>
+                            <DataGridTextColumn Binding="{Binding Fee}" Header="Fee"/>
+                            <DataGridTextColumn Header="Cash Balance"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>
