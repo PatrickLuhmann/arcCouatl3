@@ -45,7 +45,24 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		public string PocSecSym { get; set; }
+		public string PocSecName { get; set; }
+		public List<Security> PocSecList
+		{
+			get
+			{
+				List<Security> list;
+				using (var db = new CouatlContext())
+				{
+					list = db.Securities.ToList();
+				}
+				return list;
+			}
+			private set { }
+		}
+
 		public RelayCommand RelayAddAccountCmd { get; set; }
+		public RelayCommand RelayAddSecurityCmd { get; set; }
 
 		private void AddAccount()
 		{
@@ -61,6 +78,23 @@ namespace Couatl3.ViewModels
 			RaisePropertyChanged("Accounts");
 		}
 
+		private void AddSecurity()
+		{
+			if (PocSecSym == "" || PocSecName == "")
+				return;
+			Security newSec = new Security();
+			newSec.Symbol = PocSecSym;
+			newSec.Name = PocSecName;
+			using (var db = new CouatlContext())
+			{
+				db.Securities.Add(newSec);
+				db.SaveChanges();
+			}
+			PocSecSym = "";
+			PocSecName = "";
+			RaisePropertyChanged("PocSecList");
+		}
+
 		public Main_VM()
 		{
 			// TODO: Move this to a ViewModel.
@@ -70,6 +104,11 @@ namespace Couatl3.ViewModels
 			}
 
 			RelayAddAccountCmd = new RelayCommand(AddAccount);
+			RelayAddSecurityCmd = new RelayCommand(AddSecurity);
+
+			//TODO: POC for add security
+			PocSecSym = "";
+			PocSecName = "";
 		}
 	}
 }
