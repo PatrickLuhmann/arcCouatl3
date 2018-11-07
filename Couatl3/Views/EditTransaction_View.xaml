@@ -4,17 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Couatl3.Views"
+             xmlns:vms="clr-namespace:Couatl3.ViewModels"
              mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vms:Transaction_VM}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Date</TextBlock>
-                <TextBox></TextBox>
+                <TextBox Text="{Binding TheTransaction.Date}"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Type</TextBlock>
-                <TextBox></TextBox>
+                <TextBox Text="{Binding TheTransaction.Type}"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Security</TextBlock>
@@ -22,15 +24,15 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Quantity</TextBlock>
-                <TextBox></TextBox>
+                <TextBox Text="{Binding TheTransaction.Quantity}"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Fee</TextBlock>
-                <TextBox></TextBox>
+                <TextBox Text="{Binding TheTransaction.Fee}"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Value</TextBlock>
-                <TextBox></TextBox>
+                <TextBox Text="{Binding TheTransaction.Value}"></TextBox>
             </StackPanel>
             <Button>Confirm Change</Button>
         </StackPanel>
