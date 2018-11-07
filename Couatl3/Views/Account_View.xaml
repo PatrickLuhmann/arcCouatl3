@@ -42,6 +42,8 @@
                 </StackPanel>
                 <StackPanel Margin="5,5,15,5">
                     <TextBlock>Transactions</TextBlock>
+                    <Button Command="{Binding AddTransactionCmd}">Add Transaction</Button>
+                    <Button>Delete Transaction</Button>
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Date}" Header="Date"/>

@@ -1,5 +1,6 @@
 ﻿using Couatl3.Models;
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using System.Collections.ObjectModel;
 
 namespace Couatl3.ViewModels
@@ -24,9 +25,21 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		public RelayCommand AddTransactionCmd { get; set; }
+
+		private void AddTransaction()
+		{
+			Transaction t = new Transaction();
+			Transaction_VM tvm = new Transaction_VM();
+			tvm.TheTransaction = t;
+			MyTransactions.Add(tvm);
+		}
+
 		public Account_VM(Account acct)
 		{
 			TheAccount = acct;
+
+			AddTransactionCmd = new RelayCommand(AddTransaction);
 
 			// Populate MyPositions.
 			MyPositions = new ObservableCollection<Position_VM>();
