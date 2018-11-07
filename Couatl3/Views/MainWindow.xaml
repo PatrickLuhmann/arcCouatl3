@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:Couatl3.Views"
         xmlns:vms="clr-namespace:Couatl3.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="1000" Width="1000">
     <Window.DataContext>
         <vms:Main_VM/>
     </Window.DataContext>
