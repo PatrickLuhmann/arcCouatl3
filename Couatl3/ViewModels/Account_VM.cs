@@ -25,7 +25,10 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		public bool InAddState { get; set; } = false;
 		public RelayCommand AddTransactionCmd { get; set; }
+		public RelayCommand DeleteTransactionCmd { get; set; }
+		public RelayCommand UpdateTransactionCmd { get; set; }
 
 		private void AddTransaction()
 		{
@@ -35,11 +38,29 @@ namespace Couatl3.ViewModels
 			MyTransactions.Add(tvm);
 		}
 
+		public void DeleteTransaction()
+		{
+
+		}
+		
+		public void UpdateTransaction()
+		{
+			if (InAddState)
+			{
+			}
+			else
+			{
+
+			}
+		}
+
 		public Account_VM(Account acct)
 		{
 			TheAccount = acct;
 
 			AddTransactionCmd = new RelayCommand(AddTransaction);
+			DeleteTransactionCmd = new RelayCommand(DeleteTransaction);
+			UpdateTransactionCmd = new RelayCommand(UpdateTransaction);
 
 			// Populate MyPositions.
 			MyPositions = new ObservableCollection<Position_VM>();
