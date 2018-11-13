@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Couatl3", "Couatl3\Couatl3.csproj", "{D2A88A44-3249-4C6C-AA33-0859230E49CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Couatl3_UnitTest", "Couatl3_UnitTest\Couatl3_UnitTest.csproj", "{D518480B-9C2E-4A1E-964E-112632AEB747}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D2A88A44-3249-4C6C-AA33-0859230E49CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2A88A44-3249-4C6C-AA33-0859230E49CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2A88A44-3249-4C6C-AA33-0859230E49CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D518480B-9C2E-4A1E-964E-112632AEB747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D518480B-9C2E-4A1E-964E-112632AEB747}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D518480B-9C2E-4A1E-964E-112632AEB747}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D518480B-9C2E-4A1E-964E-112632AEB747}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
