@@ -34,7 +34,6 @@
                 <TextBlock>Value</TextBlock>
                 <TextBox Text="{Binding TheTransaction.Value}"></TextBox>
             </StackPanel>
-            <Button>Confirm Change</Button>
         </StackPanel>
     </Grid>
 </UserControl>

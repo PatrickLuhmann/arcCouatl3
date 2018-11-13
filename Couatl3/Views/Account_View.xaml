@@ -55,8 +55,8 @@
                     </DataGrid>
                     <StackPanel Orientation="Horizontal">
                         <Button Margin="5" Command="{Binding AddTransactionCmd}">Add Transaction</Button>
-                        <Button Margin="5">Delete Transaction</Button>
-                        <Button Margin="5">Update Transaction</Button>
+                        <Button Margin="5" Command="{Binding DeleteTransactionCmd}">Delete Transaction</Button>
+                        <Button Margin="5" Command="{Binding UpdateTransactionCmd}">Update Transaction</Button>
                     </StackPanel>
                     <ContentControl Content="{Binding SelectedTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
 

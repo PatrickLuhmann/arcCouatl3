@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Couatl3.ViewModels
 {
@@ -50,7 +51,15 @@ namespace Couatl3.ViewModels
 			}
 			else
 			{
-
+				//ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+				using (var db = new CouatlContext())
+				{
+					//TODO: Why do I need to manually set the state to Modified?
+					// I found this in Anhkheg3 and it is what I needed to get it to work, but 
+					// I still don't know why, or if there is a better way.
+					db.Entry(selectedTransaction.TheTransaction).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+					db.SaveChanges();
+				}
 			}
 		}
 
