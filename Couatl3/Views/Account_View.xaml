@@ -16,6 +16,13 @@
     </UserControl.Resources>
     <Grid>
         <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Name: "/>
+                <TextBox Text="{Binding TheAccount.Name}"/>
+                <TextBlock Text="Institution: "/>
+                <TextBox Text="{Binding TheAccount.Institution}"/>
+                <Button Margin="5" Command="{Binding UpdateAccountNamesCmd}">Update</Button>
+            </StackPanel>
             <TextBlock>
                 <Run Text="Name:"/>
                 <Run Text="{Binding TheAccount.Name}"/>

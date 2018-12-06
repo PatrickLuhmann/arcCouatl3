@@ -19,21 +19,10 @@ namespace Couatl3.ViewModels
 			get
 			{
 				ObservableCollection<Account_VM> items = new ObservableCollection<Account_VM>();
-				using (var db = new CouatlContext())
+				List<Account> openAccts = ModelService.GetAccounts(true);
+				foreach (Account acct in openAccts)
 				{
-					// TODO: Figure out why this statement is needed.
-					// If I don't get the list of Securities here, the Transactions
-					// collection of the Account will have null for the Security.
-					List<Security> secList = db.Securities.ToList();
-					List<Account> openAccts = db.Accounts
-						.Where(a => a.Closed == false)
-						.Include(a => a.Transactions)
-						.Include(a => a.Positions)
-						.ToList();
-					foreach (Account acct in openAccts)
-					{
-						items.Add(new Account_VM(acct));
-					}
+					items.Add(new Account_VM(acct));
 				}
 				return items;
 			}
@@ -74,15 +63,13 @@ namespace Couatl3.ViewModels
 
 		private void AddAccount()
 		{
-			// TODO: Remove this test code.
 			Account newAcct = new Account();
 			newAcct.Institution = "Bank Of Middle Earth";
 			newAcct.Name = "Elrond's Checking Account";
-			using (var db = new CouatlContext())
-			{
-				db.Accounts.Add(newAcct);
-				db.SaveChanges();
-			}
+
+			ModelService.AddAccount(newAcct);
+
+			// Trigger a re-read of the database.
 			RaisePropertyChanged("Accounts");
 		}
 
@@ -105,11 +92,7 @@ namespace Couatl3.ViewModels
 
 		public Main_VM()
 		{
-			// TODO: Move this to a ViewModel.
-			using (var db = new CouatlContext())
-			{
-				db.Database.Migrate();
-			}
+			ModelService.Initialize();
 
 			RelayAddAccountCmd = new RelayCommand(AddAccount);
 			RelayAddSecurityCmd = new RelayCommand(AddSecurity);
