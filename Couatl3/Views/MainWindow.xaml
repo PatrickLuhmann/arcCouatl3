@@ -26,6 +26,12 @@
                 <TextBox Name="PocSecName" Width="100" Text="{Binding PocSecName}"></TextBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="5">Number Of Accounts: </TextBlock>
+                <TextBlock Margin="5" Text="{Binding Accounts.Count}"/>
+                <TextBlock Margin="5">Number Of Transactions: </TextBlock>
+                <TextBlock Margin="5" Text="{Binding NumXacts}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">

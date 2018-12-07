@@ -43,6 +43,14 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		public int NumXacts {
+			get
+			{
+				List<Transaction> temp = ModelService.GetTransactions();
+				return temp.Count;
+			}
+		}
+
 		public string PocSecSym { get; set; }
 		public string PocSecName { get; set; }
 		public List<Security> PocSecList
@@ -96,6 +104,7 @@ namespace Couatl3.ViewModels
 				else
 					SelectedAccount = null;
 			}
+			RaisePropertyChanged("NumXacts");
 		}
 
 		private void AddSecurity()

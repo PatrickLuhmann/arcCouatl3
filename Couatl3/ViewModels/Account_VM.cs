@@ -43,13 +43,15 @@ namespace Couatl3.ViewModels
 			Transaction_VM tvm = new Transaction_VM();
 			tvm.TheTransaction = t;
 			MyTransactions.Add(tvm);
+			RaisePropertyChanged("NumXacts");
 		}
 
 		public void DeleteTransaction()
 		{
+			RaisePropertyChanged("NumXacts");
 
 		}
-		
+
 		public void UpdateTransaction()
 		{
 			if (InAddState)
