@@ -56,6 +56,16 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void DeleteAccount(Account acct)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Accounts.Attach(acct);
+				db.Remove(acct);
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Account> GetAccounts(bool openOnly)
 		{
 			// TODO: Figure out why this statement is needed.
@@ -77,6 +87,19 @@ namespace Couatl3.Models
 						.Include(a => a.Transactions)
 						.Include(a => a.Positions)
 						.ToList();
+			}
+			return theList;
+		}
+
+		static public List<Transaction> GetTransactions()
+		{
+			List<Transaction> theList;
+			using (var db = new CouatlContext())
+			{
+				theList = db.Transactions
+					.Include(t => t.Account)
+					.Include(t => t.Security)
+					.ToList();
 			}
 			return theList;
 		}

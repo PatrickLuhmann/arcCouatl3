@@ -14,17 +14,18 @@ namespace Couatl3.ViewModels
 {
     public class Main_VM : ViewModelBase
     {
+		private ObservableCollection<Account_VM> accounts = new ObservableCollection<Account_VM>();
 		public ObservableCollection<Account_VM> Accounts
 		{
 			get
 			{
-				ObservableCollection<Account_VM> items = new ObservableCollection<Account_VM>();
 				List<Account> openAccts = ModelService.GetAccounts(true);
+				accounts.Clear();
 				foreach (Account acct in openAccts)
 				{
-					items.Add(new Account_VM(acct));
+					accounts.Add(new Account_VM(acct));
 				}
-				return items;
+				return accounts;
 			}
 		}
 
@@ -59,6 +60,7 @@ namespace Couatl3.ViewModels
 		}
 
 		public RelayCommand RelayAddAccountCmd { get; set; }
+		public RelayCommand RelayDeleteAccountCmd { get; set; }
 		public RelayCommand RelayAddSecurityCmd { get; set; }
 
 		private void AddAccount()
@@ -71,6 +73,29 @@ namespace Couatl3.ViewModels
 
 			// Trigger a re-read of the database.
 			RaisePropertyChanged("Accounts");
+		}
+
+		private void DeleteAccount()
+		{
+			if (selectedAccount != null)
+			{
+				// Remove it from the database.
+				ModelService.DeleteAccount(selectedAccount.TheAccount);
+
+				// Remove it from the VM list.
+				// NOTE: This sets selectedAccount to null
+				accounts.Remove(selectedAccount);
+
+				// Trigger a re-read of the database.
+				// NOTE: This sets selected Account to null
+				RaisePropertyChanged("Accounts");
+
+				// Update selected item.
+				if (accounts.Count > 0)
+					SelectedAccount = accounts[0];
+				else
+					SelectedAccount = null;
+			}
 		}
 
 		private void AddSecurity()
@@ -95,6 +120,7 @@ namespace Couatl3.ViewModels
 			ModelService.Initialize();
 
 			RelayAddAccountCmd = new RelayCommand(AddAccount);
+			RelayDeleteAccountCmd = new RelayCommand(DeleteAccount);
 			RelayAddSecurityCmd = new RelayCommand(AddSecurity);
 
 			//TODO: POC for add security
