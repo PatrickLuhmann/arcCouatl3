@@ -22,6 +22,7 @@ namespace Couatl3.Models
 			optionsBuilder.UseSqlite(@"Data Source=couatl3.db");
 		}
 	}
+#if false
 
 	public class ModelService
 	{
@@ -109,7 +110,7 @@ namespace Couatl3.Models
 			return 0;
 		}
 	}
-
+#endif
 	public class Account
 	{
 		public int AccountId { get; set; }
