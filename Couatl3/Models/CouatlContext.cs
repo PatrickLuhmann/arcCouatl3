@@ -113,6 +113,7 @@ namespace Couatl3.Models
 
 		public Security Security { get; set; }
 
+		public int AccountId { get; set; }
 		public Account Account { get; set; }
 	}
 
@@ -124,6 +125,7 @@ namespace Couatl3.Models
 		public DateTime Date { get; set; }
 		public bool Closing { get; set; }
 
+		public int SecurityId { get; set; }
 		public Security Security { get; set; }
 	}
 
@@ -141,7 +143,9 @@ namespace Couatl3.Models
 
 		public decimal Quantity { get; set; }
 
+		public int BuyTransactionId { get; set; }
 		public Transaction BuyTransaction { get; set; }
+		public int SellTransactionId { get; set; }
 		public Transaction SellTransaction { get; set; }
 	}
 
@@ -151,6 +155,7 @@ namespace Couatl3.Models
 
 		public decimal Quantity { get; set; }
 
+		public int SecurityId { get; set; }
 		public Security Security { get; set; }
 	}
 }

@@ -14,7 +14,7 @@ namespace Couatl3.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024");
+                .HasAnnotation("ProductVersion", "2.2.0-rtm-35687");
 
             modelBuilder.Entity("Couatl3.Models.Account", b =>
                 {
@@ -39,17 +39,17 @@ namespace Couatl3.Migrations
                     b.Property<int>("LotAssignmentId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("BuyTransactionTransactionId");
+                    b.Property<int>("BuyTransactionId");
 
                     b.Property<decimal>("Quantity");
 
-                    b.Property<int?>("SellTransactionTransactionId");
+                    b.Property<int>("SellTransactionId");
 
                     b.HasKey("LotAssignmentId");
 
-                    b.HasIndex("BuyTransactionTransactionId");
+                    b.HasIndex("BuyTransactionId");
 
-                    b.HasIndex("SellTransactionTransactionId");
+                    b.HasIndex("SellTransactionId");
 
                     b.ToTable("LotAssignments");
                 });
@@ -63,7 +63,7 @@ namespace Couatl3.Migrations
 
                     b.Property<decimal>("Quantity");
 
-                    b.Property<int?>("SecurityId");
+                    b.Property<int>("SecurityId");
 
                     b.HasKey("PositionId");
 
@@ -85,7 +85,7 @@ namespace Couatl3.Migrations
 
                     b.Property<DateTime>("Date");
 
-                    b.Property<int?>("SecurityId");
+                    b.Property<int>("SecurityId");
 
                     b.HasKey("PriceId");
 
@@ -113,7 +113,7 @@ namespace Couatl3.Migrations
                     b.Property<int>("TransactionId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AccountId");
+                    b.Property<int>("AccountId");
 
                     b.Property<DateTime>("Date");
 
@@ -140,11 +140,13 @@ namespace Couatl3.Migrations
                 {
                     b.HasOne("Couatl3.Models.Transaction", "BuyTransaction")
                         .WithMany()
-                        .HasForeignKey("BuyTransactionTransactionId");
+                        .HasForeignKey("BuyTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Couatl3.Models.Transaction", "SellTransaction")
                         .WithMany()
-                        .HasForeignKey("SellTransactionTransactionId");
+                        .HasForeignKey("SellTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Couatl3.Models.Position", b =>
@@ -155,21 +157,24 @@ namespace Couatl3.Migrations
 
                     b.HasOne("Couatl3.Models.Security", "Security")
                         .WithMany()
-                        .HasForeignKey("SecurityId");
+                        .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Couatl3.Models.Price", b =>
                 {
                     b.HasOne("Couatl3.Models.Security", "Security")
                         .WithMany()
-                        .HasForeignKey("SecurityId");
+                        .HasForeignKey("SecurityId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Couatl3.Models.Transaction", b =>
                 {
                     b.HasOne("Couatl3.Models.Account", "Account")
                         .WithMany("Transactions")
-                        .HasForeignKey("AccountId");
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Couatl3.Models.Security", "Security")
                         .WithMany()

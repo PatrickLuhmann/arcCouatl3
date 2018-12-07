@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Couatl3.Migrations
 {
-    public partial class Couatl_Migration_1 : Migration
+    public partial class Migration_01 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,7 +44,7 @@ namespace Couatl3.Migrations
                     PositionId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Quantity = table.Column<decimal>(nullable: false),
-                    SecurityId = table.Column<int>(nullable: true),
+                    SecurityId = table.Column<int>(nullable: false),
                     AccountId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
@@ -61,7 +61,7 @@ namespace Couatl3.Migrations
                         column: x => x.SecurityId,
                         principalTable: "Securities",
                         principalColumn: "SecurityId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -73,7 +73,7 @@ namespace Couatl3.Migrations
                     Amount = table.Column<decimal>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
                     Closing = table.Column<bool>(nullable: false),
-                    SecurityId = table.Column<int>(nullable: true)
+                    SecurityId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,7 +83,7 @@ namespace Couatl3.Migrations
                         column: x => x.SecurityId,
                         principalTable: "Securities",
                         principalColumn: "SecurityId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,7 +98,7 @@ namespace Couatl3.Migrations
                     Fee = table.Column<decimal>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
                     SecurityId = table.Column<int>(nullable: true),
-                    AccountId = table.Column<int>(nullable: true)
+                    AccountId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -108,7 +108,7 @@ namespace Couatl3.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "AccountId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Transactions_Securities_SecurityId",
                         column: x => x.SecurityId,
@@ -124,35 +124,35 @@ namespace Couatl3.Migrations
                     LotAssignmentId = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Quantity = table.Column<decimal>(nullable: false),
-                    BuyTransactionTransactionId = table.Column<int>(nullable: true),
-                    SellTransactionTransactionId = table.Column<int>(nullable: true)
+                    BuyTransactionId = table.Column<int>(nullable: false),
+                    SellTransactionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LotAssignments", x => x.LotAssignmentId);
                     table.ForeignKey(
-                        name: "FK_LotAssignments_Transactions_BuyTransactionTransactionId",
-                        column: x => x.BuyTransactionTransactionId,
+                        name: "FK_LotAssignments_Transactions_BuyTransactionId",
+                        column: x => x.BuyTransactionId,
                         principalTable: "Transactions",
                         principalColumn: "TransactionId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LotAssignments_Transactions_SellTransactionTransactionId",
-                        column: x => x.SellTransactionTransactionId,
+                        name: "FK_LotAssignments_Transactions_SellTransactionId",
+                        column: x => x.SellTransactionId,
                         principalTable: "Transactions",
                         principalColumn: "TransactionId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LotAssignments_BuyTransactionTransactionId",
+                name: "IX_LotAssignments_BuyTransactionId",
                 table: "LotAssignments",
-                column: "BuyTransactionTransactionId");
+                column: "BuyTransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LotAssignments_SellTransactionTransactionId",
+                name: "IX_LotAssignments_SellTransactionId",
                 table: "LotAssignments",
-                column: "SellTransactionTransactionId");
+                column: "SellTransactionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Positions_AccountId",
