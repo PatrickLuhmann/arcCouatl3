@@ -23,7 +23,7 @@ namespace Couatl3.ViewModels
 				accounts.Clear();
 				foreach (Account acct in openAccts)
 				{
-					accounts.Add(new Account_VM(acct));
+					accounts.Add(new Account_VM(acct, this));
 				}
 				return accounts;
 			}
@@ -43,12 +43,18 @@ namespace Couatl3.ViewModels
 			}
 		}
 
-		public int NumXacts {
+		public int NumXacts
+		{
 			get
 			{
 				List<Transaction> temp = ModelService.GetTransactions();
 				return temp.Count;
 			}
+		}
+
+		public void NotifyNumXacts()
+		{
+			RaisePropertyChanged("NumXacts");
 		}
 
 		public string PocSecSym { get; set; }

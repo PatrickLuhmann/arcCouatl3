@@ -50,6 +50,17 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void DeleteTransaction(Transaction xact)
+		{
+			Account acct = xact.Account;
+
+			using (var db = new CouatlContext())
+			{
+				db.Transactions.Remove(xact);
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Account> GetAccounts(bool openOnly)
 		{
 			// TODO: Figure out why this statement is needed.

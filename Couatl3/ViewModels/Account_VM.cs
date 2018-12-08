@@ -39,17 +39,27 @@ namespace Couatl3.ViewModels
 
 		private void AddTransaction()
 		{
+			// Create the object and update the database.
 			Transaction t = new Transaction();
+			TheAccount.Transactions.Add(t);
+			ModelService.UpdateAccount(TheAccount);
+
+			// Create the VM object and update the app/UI.
 			Transaction_VM tvm = new Transaction_VM();
 			tvm.TheTransaction = t;
 			MyTransactions.Add(tvm);
-			RaisePropertyChanged("NumXacts");
+			MyParent.NotifyNumXacts();
 		}
 
 		public void DeleteTransaction()
 		{
-			RaisePropertyChanged("NumXacts");
-
+			if (SelectedTransaction != null)
+			{
+				ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
+				MyTransactions.Remove(SelectedTransaction);
+				SelectedTransaction = null;
+				MyParent.NotifyNumXacts();
+			}
 		}
 
 		public void UpdateTransaction()
@@ -71,9 +81,11 @@ namespace Couatl3.ViewModels
 			}
 		}
 
-		public Account_VM(Account acct)
+		private Main_VM MyParent;
+		public Account_VM(Account acct, Main_VM parent)
 		{
 			TheAccount = acct;
+			MyParent = parent;
 
 			UpdateAccountNamesCmd = new RelayCommand(UpdateAccountNames);
 			AddTransactionCmd = new RelayCommand(AddTransaction);

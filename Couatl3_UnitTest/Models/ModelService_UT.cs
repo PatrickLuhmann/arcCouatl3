@@ -34,7 +34,7 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
-		public void UpdateAccount()
+		public void UpdateAccount_ChangeNames()
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
@@ -59,6 +59,104 @@ namespace Couatl3_UnitTest
 			Account testAcct = afterAccounts.Find(a => a.AccountId == theAcct.AccountId);
 			Assert.AreEqual(newName, testAcct.Name);
 			Assert.AreEqual(newInst, testAcct.Institution);
+		}
+
+		[TestMethod]
+		public void UpdateAccount_AddXact()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Transaction> XactListBefore = ModelService.GetTransactions();
+
+			// ACT
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = 1,
+				Security = null,
+				Value = 67.89M
+			};
+			theAcct.Transactions.Add(theXact);
+			theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = 1,
+				Security = null,
+				Value = 2.39M
+			};
+			theAcct.Transactions.Add(theXact);
+
+			ModelService.UpdateAccount(theAcct);
+
+			// ASSERT
+			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			List<Transaction> XactListAfter = ModelService.GetTransactions();
+
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+			Assert.AreEqual(XactListBefore.Count + 2, XactListAfter.Count);
+			Assert.IsNotNull(XactListAfter.Find(x => x.TransactionId == theXactID[0]));
+			Assert.IsNotNull(XactListAfter.Find(x => x.TransactionId == theXactID[1]));
+		}
+
+		[TestMethod]
+		public void DeleteTransaction()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+
+			// Add a couple of transactions.
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = 1,
+				Security = null,
+				Value = 67.89M
+			};
+			theAcct.Transactions.Add(theXact);
+			theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = 1,
+				Security = null,
+				Value = 2.39M
+			};
+			theAcct.Transactions.Add(theXact);
+			ModelService.UpdateAccount(theAcct);
+
+			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Transaction> XactListBefore = ModelService.GetTransactions();
+
+			// ACT
+			ModelService.DeleteTransaction(theAcct.Transactions[0]);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			Account testAcct = AccountListAfter.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(1, testAcct.Transactions.Count);
+
+			List<Transaction> XactListAfter = ModelService.GetTransactions();
+			Assert.AreEqual(XactListBefore.Count - 1, XactListAfter.Count);
+			Assert.IsNull(XactListAfter.Find(x => x.TransactionId == theXactID[0]));
+			Assert.IsNotNull(XactListAfter.Find(x => x.TransactionId == theXactID[1]));
 		}
 
 		[TestMethod]
