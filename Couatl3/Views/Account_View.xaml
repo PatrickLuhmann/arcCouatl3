@@ -48,6 +48,11 @@
                     </DataGrid>
                 </StackPanel>
                 <StackPanel Margin="5,5,15,5">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Margin="5" Command="{Binding AddTransactionCmd}">Add Transaction</Button>
+                        <Button Margin="5" Command="{Binding DeleteTransactionCmd}">Delete Transaction</Button>
+                        <Button Margin="5" Command="{Binding UpdateTransactionCmd}">Update Transaction</Button>
+                    </StackPanel>
                     <TextBlock>Transactions</TextBlock>
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
@@ -60,11 +65,6 @@
                             <DataGridTextColumn Binding="{Binding CashBalance}" Header="Cash Balance"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Margin="5" Command="{Binding AddTransactionCmd}">Add Transaction</Button>
-                        <Button Margin="5" Command="{Binding DeleteTransactionCmd}">Delete Transaction</Button>
-                        <Button Margin="5" Command="{Binding UpdateTransactionCmd}">Update Transaction</Button>
-                    </StackPanel>
                     <ContentControl Content="{Binding SelectedTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
 
                 </StackPanel>
