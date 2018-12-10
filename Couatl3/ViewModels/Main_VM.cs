@@ -39,6 +39,7 @@ namespace Couatl3.ViewModels
 			set
 			{
 				selectedAccount = value;
+				selectedAccount.SelectedTransaction = null;
 				RaisePropertyChanged("SelectedAccount");
 			}
 		}
