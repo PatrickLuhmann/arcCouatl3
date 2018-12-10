@@ -26,7 +26,6 @@ namespace Couatl3.ViewModels
 			}
 		}
 
-		public bool InAddState { get; set; } = false;
 		public RelayCommand UpdateAccountNamesCmd { get; set; }
 		public RelayCommand AddTransactionCmd { get; set; }
 		public RelayCommand DeleteTransactionCmd { get; set; }
@@ -64,10 +63,7 @@ namespace Couatl3.ViewModels
 
 		public void UpdateTransaction()
 		{
-			if (InAddState)
-			{
-			}
-			else
+			if (SelectedTransaction != null)
 			{
 				ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
 			}
