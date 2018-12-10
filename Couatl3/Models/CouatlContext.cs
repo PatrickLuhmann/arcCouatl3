@@ -117,7 +117,7 @@ namespace Couatl3.Models
 
 		public string Institution { get; set; }
 		public string Name { get; set; }
-		public decimal Cash { get; set; } = 0;
+		public decimal Cash { get; set; } = 0.0M;
 		//public decimal Value { get; set; }
 		public bool Closed { get; set; } = false;
 
@@ -130,9 +130,9 @@ namespace Couatl3.Models
 		public int TransactionId { get; set; }
 
 		public int Type { get; set; }
-		public decimal Quantity { get; set; }
-		public decimal Value { get; set; }
-		public decimal Fee { get; set; }
+		public decimal Quantity { get; set; } = 0.0M;
+		public decimal Value { get; set; } = 0.0M;
+		public decimal Fee { get; set; } = 0.0M;
 		public DateTime Date { get; set; }
 
 		public Security Security { get; set; }
@@ -145,9 +145,9 @@ namespace Couatl3.Models
 	{
 		public int PriceId { get; set; }
 
-		public decimal Amount { get; set; }
+		public decimal Amount { get; set; } = 0.0M;
 		public DateTime Date { get; set; }
-		public bool Closing { get; set; }
+		public bool Closing { get; set; } = false;
 
 		public int SecurityId { get; set; }
 		public Security Security { get; set; }
@@ -165,7 +165,7 @@ namespace Couatl3.Models
 	{
 		public int LotAssignmentId { get; set; }
 
-		public decimal Quantity { get; set; }
+		public decimal Quantity { get; set; } = 0.0M;
 
 		public int BuyTransactionId { get; set; }
 		public Transaction BuyTransaction { get; set; }
@@ -177,7 +177,7 @@ namespace Couatl3.Models
 	{
 		public int PositionId { get; set; }
 
-		public decimal Quantity { get; set; }
+		public decimal Quantity { get; set; } = 0.0M;
 
 		public int SecurityId { get; set; }
 		public Security Security { get; set; }
