@@ -38,7 +38,7 @@
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="5,5,15,5">
                     <TextBlock>Positions</TextBlock>
-                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyPositions}">
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyPositions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Security.Name}" Header="Security"/>
                             <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
@@ -49,7 +49,7 @@
                 </StackPanel>
                 <StackPanel Margin="5,5,15,5">
                     <TextBlock>Transactions</TextBlock>
-                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}">
+                    <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Date}" Header="Date"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Type}" Header="Type"/>
