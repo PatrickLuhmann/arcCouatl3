@@ -50,6 +50,16 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void UpdateTransaction(Transaction xact)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Transactions.Attach(xact);
+				db.Entry(xact).State = EntityState.Modified;
+				db.SaveChanges();
+			}
+		}
+
 		static public void DeleteTransaction(Transaction xact)
 		{
 			Account acct = xact.Account;
