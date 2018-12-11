@@ -28,7 +28,11 @@
         <TextBlock Grid.Column="0" Grid.Row="4" Margin="5">Fee</TextBlock>
         <TextBlock Grid.Column="0" Grid.Row="5" Margin="5">Value</TextBlock>
         <DatePicker Grid.Column="1" Grid.Row="0" SelectedDate="{Binding TheTransaction.Date}"></DatePicker>
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding TheTransaction.Type}"></TextBox>
+        <ComboBox Grid.Column="1" Grid.Row="1"
+                  ItemsSource="{Binding XactTypeList}"
+                  DisplayMemberPath="XactTypeString"
+                  SelectedValuePath="XactEnum"
+                  SelectedValue="{Binding Type}"/>
         <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding TheTransaction.Security.Symbol}"></TextBox>
         <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding TheTransaction.Quantity}"></TextBox>
         <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding TheTransaction.Fee}"></TextBox>

@@ -113,5 +113,17 @@ namespace Couatl3.Models
 		{
 			return 0;
 		}
+
+		public enum TransactionType
+		{
+			Null = 0,
+			Deposit,
+			Withdrawal,
+			Buy,
+			Sell,
+			Dividend,
+			StockSplit,
+			Invalid
+		}
 	}
 }

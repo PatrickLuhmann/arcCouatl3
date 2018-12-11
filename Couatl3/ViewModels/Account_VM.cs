@@ -1,6 +1,7 @@
 ﻿using Couatl3.Models;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -115,7 +116,13 @@ namespace Couatl3.ViewModels
 		public decimal Value { get; set; }
 	}
 
-	public class Transaction_VM
+	public class ComboBoxXactType
+	{
+		public ModelService.TransactionType XactEnum { get; set; }
+		public string XactTypeString { get; set; }
+	}
+
+	public class Transaction_VM : ViewModelBase
 	{
 		private Transaction theTransaction;
 		public Transaction TheTransaction
@@ -124,11 +131,45 @@ namespace Couatl3.ViewModels
 			set
 			{
 				theTransaction = value;
+
+				type = (ModelService.TransactionType)theTransaction.Type;
+				
 				//TODO: Implement method to calculate cash balance per transaction.
 				CashBalance = 3.4M;
 			}
 		}
 
+		public List<ComboBoxXactType> XactTypeList { get; set; }
+
+		private ModelService.TransactionType type;
+		public ModelService.TransactionType Type
+		{
+			get
+			{
+				return type;
+			}
+			set
+			{
+				type = value;
+				theTransaction.Type = (int)type;
+				RaisePropertyChanged("Type");
+				RaisePropertyChanged("TheTransaction");
+			}
+		}
+
 		public decimal CashBalance { get; set; } = 1.2M;
+
+		public Transaction_VM()
+		{
+			XactTypeList = new List<ComboBoxXactType>()
+			{
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Deposit, XactTypeString = "Deposit"},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Withdrawal, XactTypeString = "Withdrawal"},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Buy, XactTypeString = "Buy"},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Sell, XactTypeString = "Sell"},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Dividend, XactTypeString = "Dividend "},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.StockSplit, XactTypeString = "Stock Split"},
+			};
+		}
 	}
 }
