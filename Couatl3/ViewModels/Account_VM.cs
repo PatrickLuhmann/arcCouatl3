@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -14,7 +15,7 @@ namespace Couatl3.ViewModels
 	{
 		public Account TheAccount { get; set; }
 		public ObservableCollection<Position_VM> MyPositions { get; private set; }
-		public ObservableCollection<Transaction_VM> MyTransactions { get; set; }
+		public ObservableCollection<Transaction_VM> MyTransactions { get; private set; }
 
 		private Transaction_VM selectedTransaction;
 		public Transaction_VM SelectedTransaction
@@ -51,6 +52,7 @@ namespace Couatl3.ViewModels
 			Transaction_VM tvm = new Transaction_VM();
 			tvm.TheTransaction = t;
 			MyTransactions.Add(tvm);
+
 			MyParent.NotifyNumXacts();
 		}
 
@@ -70,6 +72,8 @@ namespace Couatl3.ViewModels
 			if (SelectedTransaction != null)
 			{
 				ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+
+				CalculateCashBalance();
 			}
 		}
 
@@ -101,6 +105,45 @@ namespace Couatl3.ViewModels
 				pvm.TheTransaction = t;
 				MyTransactions.Add(pvm);
 			}
+
+			CalculateCashBalance();
+		}
+
+		private void CalculateCashBalance()
+		{
+			// This does not change MyTransactions. You could add .ToList() but I don't think that will help me.
+			MyTransactions.OrderBy(t => t.TheTransaction.Date);
+
+			ListCollectionView blah = (ListCollectionView) CollectionViewSource.GetDefaultView(MyTransactions);
+			blah.CustomSort = new SortTransactionVmByDate();
+			decimal balance = 0.0M;
+			foreach (Transaction_VM xact in blah)
+			{
+				switch (xact.TheTransaction.Type)
+				{
+					case 1:
+					case 4:
+					case 5:
+						balance += xact.TheTransaction.Value;
+						break;
+					case 2:
+					case 3:
+						balance -= xact.TheTransaction.Value;
+						break;
+				}
+				xact.CashBalance = balance;
+			}
+		}
+	}
+
+	public class SortTransactionVmByDate : IComparer
+	{
+		public int Compare(object a, object b)
+		{
+			if (((Transaction_VM)a).TheTransaction.Date > ((Transaction_VM)b).TheTransaction.Date)
+				return 1;
+			else
+				return -1;
 		}
 	}
 
