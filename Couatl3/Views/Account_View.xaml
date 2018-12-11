@@ -13,6 +13,7 @@
         <DataTemplate x:Key="EditXactTemplate">
             <views:EditTransaction_View/>
         </DataTemplate>
+        <vms:TransactionTypeToStringConverter x:Key="MyTypeConverter"/>
     </UserControl.Resources>
     <Grid>
         <StackPanel>
@@ -57,7 +58,7 @@
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyTransactions}" SelectedItem="{Binding SelectedTransaction}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Date}" Header="Date"/>
-                            <DataGridTextColumn Binding="{Binding TheTransaction.Type}" Header="Type"/>
+                            <DataGridTextColumn Binding="{Binding TheTransaction.Type, Converter={StaticResource MyTypeConverter}}" Header="Type"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Security.Symbol}" Header="Symbol"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Quantity}" Header="Quantity"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Value}" Header="Value"/>

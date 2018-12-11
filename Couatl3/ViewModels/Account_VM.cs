@@ -1,9 +1,12 @@
 ﻿using Couatl3.Models;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using System.Windows.Data;
 
 namespace Couatl3.ViewModels
 {
@@ -170,6 +173,36 @@ namespace Couatl3.ViewModels
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Dividend, XactTypeString = "Dividend "},
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.StockSplit, XactTypeString = "Stock Split"},
 			};
+		}
+	}
+
+	public class TransactionTypeToStringConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			// TODO: These strings need to be in a resource file or something.
+			switch ((int)value)
+			{
+				case 1:
+					return "Deposit";
+				case 2:
+					return "Withdrawal";
+				case 3:
+					return "Buy";
+				case 4:
+					return "Sell";
+				case 5:
+					return "Dividend";
+				case 6:
+					return "Stock Split";
+				default:
+					return "Unknown";
+			}
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
