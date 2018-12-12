@@ -121,6 +121,17 @@ namespace Couatl3.Models
 			return theList;
 		}
 
+		static public List<Security> GetSecurities()
+		{
+			List<Security> theList;
+			using (var db = new CouatlContext())
+			{
+				theList = db.Securities
+					.ToList();
+			}
+			return theList;
+		}
+
 		static public void AddSecurity(Security sec)
 		{
 			using (var db = new CouatlContext())
