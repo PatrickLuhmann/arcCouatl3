@@ -33,8 +33,8 @@
                 <Run Text="{Binding TheAccount.Institution}"/>
             </TextBlock>
             <TextBlock>
-                <Run Text="Cash: $"/>
-                <Run Text="{Binding TheAccount.Cash}"/>
+                <Run Text="Cash: "/>
+                <Run Text="{Binding TheAccount.Cash, StringFormat=C2}"/>
             </TextBlock>
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="5,5,15,5">

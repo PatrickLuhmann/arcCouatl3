@@ -114,6 +114,7 @@ namespace Couatl3.ViewModels
 			// This does not change MyTransactions. You could add .ToList() but I don't think that will help me.
 			MyTransactions.OrderBy(t => t.TheTransaction.Date);
 
+			// Update the running total for each transaction.
 			ListCollectionView blah = (ListCollectionView) CollectionViewSource.GetDefaultView(MyTransactions);
 			blah.CustomSort = new SortTransactionVmByDate();
 			decimal balance = 0.0M;
@@ -133,6 +134,10 @@ namespace Couatl3.ViewModels
 				}
 				xact.CashBalance = balance;
 			}
+
+			// Update the Account value.
+			TheAccount.Cash = balance;
+			RaisePropertyChanged("TheAccount");
 		}
 	}
 
@@ -179,9 +184,6 @@ namespace Couatl3.ViewModels
 				theTransaction = value;
 
 				type = (ModelService.TransactionType)theTransaction.Type;
-				
-				//TODO: Implement method to calculate cash balance per transaction.
-				CashBalance = 3.4M;
 			}
 		}
 
@@ -203,7 +205,7 @@ namespace Couatl3.ViewModels
 			}
 		}
 
-		public decimal CashBalance { get; set; } = 1.2M;
+		public decimal CashBalance { get; set; } = 0.0M;
 
 		public Transaction_VM()
 		{

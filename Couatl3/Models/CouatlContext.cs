@@ -133,7 +133,7 @@ namespace Couatl3.Models
 		public decimal Quantity { get; set; } = 0.0M;
 		public decimal Value { get; set; } = 0.0M;
 		public decimal Fee { get; set; } = 0.0M;
-		public DateTime Date { get; set; }
+		public DateTime Date { get; set; } = DateTime.Now;
 
 		public Security Security { get; set; }
 
