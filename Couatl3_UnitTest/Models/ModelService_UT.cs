@@ -109,6 +109,49 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void UpdateAccount_AddPosition()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Position> PositionListBefore = ModelService.GetPositions();
+
+			// The position MUST have a security (foreign key constraint).
+			Security theSec = new Security
+			{
+				Name = "Xylophones Inc.",
+				Symbol = "XYZ"
+			};
+			ModelService.AddSecurity(theSec);
+
+			// ACT
+			Position thePos = new Position
+			{
+				Quantity = 100,
+				Security = theSec,
+			};
+			theAcct.Positions.Add(thePos);
+			ModelService.UpdateAccount(theAcct);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			List<Position> PositionListAfter = ModelService.GetPositions();
+			int[] thePosID = { theAcct.Positions[0].PositionId };
+
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+			Assert.AreEqual(PositionListBefore.Count + 1, PositionListAfter.Count);
+			Assert.IsNotNull(PositionListAfter.Find(x => x.PositionId == thePosID[0]));
+		}
+
+		[TestMethod]
 		public void UpdateTransaction()
 		{
 			// ASSEMBLE

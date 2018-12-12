@@ -109,6 +109,27 @@ namespace Couatl3.Models
 			return theList;
 		}
 
+		static public List<Position> GetPositions()
+		{
+			List<Position> theList;
+			using (var db = new CouatlContext())
+			{
+				theList = db.Positions
+					.Include(p => p.Security)
+					.ToList();
+			}
+			return theList;
+		}
+
+		static public void AddSecurity(Security sec)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Securities.Add(sec);
+				db.SaveChanges();
+			}
+		}
+
 		static public decimal GetNewestPrice(Security security)
 		{
 			return 0;
