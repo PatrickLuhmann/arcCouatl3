@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
@@ -71,6 +72,24 @@ namespace Couatl3.ViewModels
 		{
 			if (SelectedTransaction != null)
 			{
+				if (selectedTransaction.TheTransaction.Type == (int)ModelService.TransactionType.Buy)
+				{
+					// Change Security?
+					// TODO: Assume Security already exists.
+					Debug.WriteLine("Buy: Symbol is " + selectedTransaction.Symbol);
+					Security theSec = ModelService.GetSecurities().Find(s => s.Symbol == selectedTransaction.Symbol);
+					selectedTransaction.TheTransaction.Security = theSec;
+
+					// Change Account.Positions?
+					// Case 1: Brand new position, means existing records not modified; new record added.
+					// Case 2: Existing position, means one existing record will change but not the others.
+					// Case 3: Change security from ABC to XYZ, means existing ABC record will change (or be
+					//         deleted), XYZ record will be changed (if it exists) or added.
+					// Brute force way is to simply delete all existing records and rebuild from scratch.
+
+					// Change Price?
+					// Change Position?
+				}
 				ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
 
 				CalculateCashBalance();
@@ -188,6 +207,7 @@ namespace Couatl3.ViewModels
 		}
 
 		public List<ComboBoxXactType> XactTypeList { get; set; }
+		public List<string> SecSymbolList { get; set; }
 
 		private ModelService.TransactionType type;
 		public ModelService.TransactionType Type
@@ -205,6 +225,8 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		public string Symbol { get; set; }
+
 		public decimal CashBalance { get; set; } = 0.0M;
 
 		public Transaction_VM()
@@ -218,6 +240,14 @@ namespace Couatl3.ViewModels
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Dividend, XactTypeString = "Dividend "},
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.StockSplit, XactTypeString = "Stock Split"},
 			};
+
+			// Get list of symbols for Security ComboBox.
+			List<Security> tempSecs = ModelService.GetSecurities();
+			SecSymbolList = new List<string>();
+			foreach (Security sec in tempSecs)
+			{
+				SecSymbolList.Add(sec.Symbol);
+			}
 		}
 	}
 
