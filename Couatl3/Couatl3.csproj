@@ -195,9 +195,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Migrations\20181207223038_Migration_01.cs" />
-    <Compile Include="Migrations\20181207223038_Migration_01.designer.cs">
-      <DependentUpon>20181207223038_Migration_01.cs</DependentUpon>
+    <Compile Include="Migrations\20181213211826_Migration_01.cs" />
+    <Compile Include="Migrations\20181213211826_Migration_01.designer.cs">
+      <DependentUpon>20181213211826_Migration_01.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CouatlContextModelSnapshot.cs" />
     <Compile Include="Models\CouatlContext.cs" />
