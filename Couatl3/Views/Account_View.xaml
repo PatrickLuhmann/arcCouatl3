@@ -41,10 +41,10 @@
                     <TextBlock>Positions</TextBlock>
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyPositions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Security.Name}" Header="Security"/>
-                            <DataGridTextColumn Binding="{Binding Security.Symbol}" Header="Symbol"/>
-                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
-                            <DataGridTextColumn Header="Value"/>
+                            <DataGridTextColumn Binding="{Binding ThePosition.Security.Name}" Header="Security"/>
+                            <DataGridTextColumn Binding="{Binding ThePosition.Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
+                            <DataGridTextColumn Binding="{Binding Value}" Header="Value"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>

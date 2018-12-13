@@ -432,6 +432,116 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(1006.95M, actXact.Value);
 		}
 
+		public void UpdateTransactionToAddToExistingPosition()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+
+			// The position MUST have a security (foreign key constraint).
+			Security theSec = new Security
+			{
+				Name = "Xylophones Inc.",
+				Symbol = "XYZ"
+			};
+			ModelService.AddSecurity(theSec);
+
+			// Add the first base transaction.
+			Transaction baseXact = new Transaction
+			{
+				Date = DateTime.Now,
+			};
+			theAcct.Transactions.Add(baseXact);
+			ModelService.UpdateAccount(theAcct);
+
+			// Change it to a Buy, which causes a new Position to be added, then the Transaction is updated.
+			// Add a new Position corresponding to the new transaction.
+			Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
+			Position thePos = new Position
+			{
+				Quantity = 100,
+				Security = newSec,
+			};
+			theAcct.Positions.Add(thePos);
+			ModelService.UpdateAccount(theAcct);
+
+			// Now update the existing transaction to make it a Buy.
+			Transaction updateXact = theAcct.Transactions.Find(t => t.TransactionId == baseXact.TransactionId);
+			updateXact.Type = 3;
+			updateXact.Security = newSec;
+			updateXact.Date = DateTime.Now;
+			updateXact.Quantity = 100;
+			updateXact.Fee = 6.95M;
+			updateXact.Value = 1006.95M;
+			ModelService.UpdateTransaction(updateXact);
+
+			// Add the second base transaction.
+			Transaction baseXact2 = new Transaction
+			{
+				Date = DateTime.Now,
+			};
+			theAcct.Transactions.Add(baseXact2);
+			ModelService.UpdateAccount(theAcct);
+
+			// TODO: Do I need all of these?
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Transaction> TransactionListBefore = ModelService.GetTransactions();
+			List<Position> PositionListBefore = ModelService.GetPositions();
+
+			// ACT
+
+			Transaction testXact = TransactionListBefore.Find(t => t.TransactionId == baseXact2.TransactionId);
+
+			// Change the Type to Buy.
+			testXact.Type = 3;
+			
+			// Set the Security.
+			Security newSec2 = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
+			testXact.Security = newSec2;
+			
+			// Get the existing Position.
+			// NOTE: This is different from the app code that I am trying to simulate.
+			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == newSec.SecurityId);
+			newPos2.Quantity += 200;
+			ModelService.UpdatePosition(newPos2);
+
+			// Update the transaction.
+			testXact.Date = DateTime.Now;
+			testXact.Quantity = 200;
+			testXact.Fee = 0.0M;
+			testXact.Value = 2000.00M;
+			ModelService.UpdateTransaction(testXact);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+
+			List<Position> PositionListAfter = ModelService.GetPositions();
+			Assert.AreEqual(PositionListBefore.Count, PositionListAfter.Count);
+
+			Account actAcct = AccountListAfter.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(1, actAcct.Positions.Count);
+			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
+			Assert.AreEqual(300, actAcct.Positions[0].Quantity);
+			// Comparing .Security doesn't work, so I just compare the ID.
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+
+			List<Transaction> TransactionListAfter = ModelService.GetTransactions();
+			Assert.AreEqual(TransactionListBefore.Count + 1, TransactionListAfter.Count);
+			Transaction actXact = TransactionListAfter.Find(t => t.TransactionId == testXact.TransactionId);
+			Assert.AreEqual(1, actXact.Type);
+			Assert.AreEqual(200M, actXact.Quantity);
+			Assert.AreEqual(0.0M, actXact.Fee);
+			Assert.AreEqual(2000.00M, actXact.Value);
+		}
+
 		[TestMethod]
 		public void Test_GetNewestPrice()
 		{

@@ -99,6 +99,9 @@ namespace Couatl3.ViewModels
 					if (selectedTransaction.TheTransaction.Security != null &&
 						selectedTransaction.TheTransaction.Security.SecurityId != newSec.SecurityId)
 					{
+						// Set the security in the transaction.
+						selectedTransaction.TheTransaction.Security = newSec;
+
 						// Take away from the old position...
 						Position oldPos = MyPositions.First(p => p.ThePosition.Security.SecurityId == selectedTransaction.TheTransaction.Security.SecurityId).ThePosition;
 						oldPos.Quantity -= selectedTransaction.Quantity;
@@ -123,10 +126,23 @@ namespace Couatl3.ViewModels
 					// Changing from Null, so just add to position.
 					else if (selectedTransaction.TheTransaction.Security == null)
 					{
+						// Set the security in the transaction.
+						selectedTransaction.TheTransaction.Security = newSec;
+
+						// TEST CODE
+						selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
+						selectedTransaction.TheTransaction.Quantity = selectedTransaction.Quantity;
+						selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
+						selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
+						ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+						// END TEST CODE
+
 						// Give to the new position?
 						Position newPos = null;
 						if (MyPositions.Count > 0)
-							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+						{
+							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId)?.ThePosition;
+						}
 						if (newPos == null)
 						{
 							newPos = new Position();
@@ -161,7 +177,8 @@ namespace Couatl3.ViewModels
 						throw new NotImplementedException();
 					}
 
-					selectedTransaction.TheTransaction.Security = newSec;
+					// TODO: Why does this line throw exception in case Buy.SameSecurity?
+					//selectedTransaction.TheTransaction.Security = newSec;
 
 					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
 					selectedTransaction.TheTransaction.Quantity = selectedTransaction.Quantity;

@@ -27,7 +27,7 @@
         <TextBlock Grid.Column="0" Grid.Row="3" Margin="5">Quantity</TextBlock>
         <TextBlock Grid.Column="0" Grid.Row="4" Margin="5">Fee</TextBlock>
         <TextBlock Grid.Column="0" Grid.Row="5" Margin="5">Value</TextBlock>
-        <DatePicker Grid.Column="1" Grid.Row="0" SelectedDate="{Binding TheTransaction.Date}"></DatePicker>
+        <DatePicker Grid.Column="1" Grid.Row="0" SelectedDate="{Binding Date}"></DatePicker>
         <ComboBox Grid.Column="1" Grid.Row="1"
                   ItemsSource="{Binding XactTypeList}"
                   DisplayMemberPath="XactTypeString"
@@ -36,8 +36,8 @@
         <ComboBox Grid.Column="1" Grid.Row="2"
                   ItemsSource="{Binding SecSymbolList}"
                   SelectedItem="{Binding Symbol}"/>
-        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding TheTransaction.Quantity}"></TextBox>
-        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding TheTransaction.Fee}"></TextBox>
-        <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding TheTransaction.Value}"></TextBox>
+        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Quantity}"></TextBox>
+        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding Fee}"></TextBox>
+        <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding Value}"></TextBox>
     </Grid>
 </UserControl>
