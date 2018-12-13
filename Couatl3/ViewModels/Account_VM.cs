@@ -127,7 +127,7 @@ namespace Couatl3.ViewModels
 					else if (selectedTransaction.TheTransaction.Security == null)
 					{
 						// Set the security in the transaction.
-						selectedTransaction.TheTransaction.Security = newSec;
+						selectedTransaction.TheTransaction.SecurityId = newSec.SecurityId;
 
 						// TEST CODE
 						selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
