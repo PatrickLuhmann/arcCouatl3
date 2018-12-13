@@ -303,6 +303,136 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void UpdatePosition()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+
+			// The position MUST have a security (foreign key constraint).
+			Security theSec = new Security
+			{
+				Name = "Xylophones Inc.",
+				Symbol = "XYZ"
+			};
+			ModelService.AddSecurity(theSec);
+
+			Position thePos = new Position
+			{
+				Quantity = 100,
+				Security = theSec,
+			};
+			theAcct.Positions.Add(thePos);
+			ModelService.UpdateAccount(theAcct);
+
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Position> PositionListBefore = ModelService.GetPositions();
+
+			// ACT
+			Position testPos = theAcct.Positions[0];
+			testPos.Quantity += 123.45M;
+			ModelService.UpdatePosition(testPos);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+
+			List<Position> PositionListAfter = ModelService.GetPositions();
+			Assert.AreEqual(PositionListBefore.Count, PositionListAfter.Count);
+
+			Account actAcct = AccountListAfter.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(1, actAcct.Positions.Count);
+			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
+			Assert.AreEqual(thePos.Quantity, actAcct.Positions[0].Quantity);
+			Assert.AreEqual(223.45M, actAcct.Positions[0].Quantity);
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+		}
+
+		[TestMethod]
+		public void UpdateTransactionToAddNewPosition()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+
+			// Add a new account to the database.
+			Account theAcct = new Account
+			{
+				Name = "Test Account Name",
+				Institution = "Test Institution Name",
+			};
+			ModelService.AddAccount(theAcct);
+
+			// The position MUST have a security (foreign key constraint).
+			Security theSec = new Security
+			{
+				Name = "Xylophones Inc.",
+				Symbol = "XYZ"
+			};
+			ModelService.AddSecurity(theSec);
+
+			// Add the base transaction.
+			Transaction baseXact = new Transaction
+			{
+				Date = DateTime.Now,
+			};
+			theAcct.Transactions.Add(baseXact);
+			ModelService.UpdateAccount(theAcct);
+
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Transaction> TransactionListBefore = ModelService.GetTransactions();
+			List<Position> PositionListBefore = ModelService.GetPositions();
+
+			// ACT
+			// Add a new Position corresponding to the new transaction.
+			Position thePos = new Position
+			{
+				Quantity = 100,
+				Security = theSec,
+			};
+			theAcct.Positions.Add(thePos);
+			ModelService.UpdateAccount(theAcct);
+
+			// Now update the existing transaction to make it a Buy.
+			Transaction updateXact = theAcct.Transactions.Find(t => t.TransactionId == baseXact.TransactionId);
+			updateXact.Type = 1;
+			updateXact.Quantity = 100;
+			updateXact.Fee = 6.95M;
+			updateXact.Value = 1006.95M;
+			Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
+			updateXact.Security = newSec;
+
+			ModelService.UpdateTransaction(updateXact);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+
+			List<Position> PositionListAfter = ModelService.GetPositions();
+			Assert.AreEqual(PositionListBefore.Count + 1, PositionListAfter.Count);
+
+			Account actAcct = AccountListAfter.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(1, actAcct.Positions.Count);
+			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
+			Assert.AreEqual(100, actAcct.Positions[0].Quantity);
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+
+			List<Transaction> TransactionListAfter = ModelService.GetTransactions();
+			Assert.AreEqual(TransactionListBefore.Count, TransactionListAfter.Count);
+			Transaction actXact = TransactionListAfter.Find(t => t.TransactionId == baseXact.TransactionId);
+			Assert.AreEqual(1, actXact.Type);
+			Assert.AreEqual(100M, actXact.Quantity);
+			Assert.AreEqual(6.95M, actXact.Fee);
+			Assert.AreEqual(1006.95M, actXact.Value);
+		}
+
+		[TestMethod]
 		public void Test_GetNewestPrice()
 		{
 			// ASSEMBLE

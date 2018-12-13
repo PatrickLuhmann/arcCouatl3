@@ -71,6 +71,16 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void UpdatePosition(Position pos)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Positions.Attach(pos);
+				db.Entry(pos).State = EntityState.Modified;
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Account> GetAccounts(bool openOnly)
 		{
 			// TODO: Figure out why this statement is needed.

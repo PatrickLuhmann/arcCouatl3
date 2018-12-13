@@ -70,15 +70,108 @@ namespace Couatl3.ViewModels
 
 		public void UpdateTransaction()
 		{
-			if (SelectedTransaction != null)
+			if (selectedTransaction != null)
 			{
-				if (selectedTransaction.TheTransaction.Type == (int)ModelService.TransactionType.Buy)
+				if (selectedTransaction.Type == ModelService.TransactionType.Null)
 				{
+					// TODO: Do something here? Or just let it slide?
+				}
+				else if (selectedTransaction.Type == ModelService.TransactionType.Deposit ||
+				         selectedTransaction.Type == ModelService.TransactionType.Withdrawal)
+				{
+					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
+					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
+					selectedTransaction.TheTransaction.Security = null; // N/A for Deposit/Withdrawal
+					selectedTransaction.TheTransaction.Quantity = 0.0M; // N/A for Deposit/Withdrawal
+					selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
+					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
+
+					ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+				}
+				else if (selectedTransaction.Type == ModelService.TransactionType.Buy)
+				{
+					// TODO: For now, assume Type can't change, because then we would need to roll back what this xact used to do.
+					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
+
+					// If Security has changed and the original was not null, then back out that Position.
+					Debug.WriteLine("Buy: Symbol was " + selectedTransaction.TheTransaction.Security + " and is now " + selectedTransaction.Symbol);
+					Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == selectedTransaction.Symbol);
+					if (selectedTransaction.TheTransaction.Security != null &&
+						selectedTransaction.TheTransaction.Security.SecurityId != newSec.SecurityId)
+					{
+						// Take away from the old position...
+						Position oldPos = MyPositions.First(p => p.ThePosition.Security.SecurityId == selectedTransaction.TheTransaction.Security.SecurityId).ThePosition;
+						oldPos.Quantity -= selectedTransaction.Quantity;
+						ModelService.UpdatePosition(oldPos);
+
+						// ... and give to the new position.
+						Position newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+						if (newPos == null)
+						{
+							newPos = new Position();
+							newPos.Security = newSec;
+							newPos.Quantity = selectedTransaction.Quantity;
+							TheAccount.Positions.Add(newPos);
+							ModelService.UpdateAccount(TheAccount);
+						}
+						else
+						{
+							newPos.Quantity += selectedTransaction.Quantity;
+							ModelService.UpdatePosition(newPos);
+						}
+					}
+					// Changing from Null, so just add to position.
+					else if (selectedTransaction.TheTransaction.Security == null)
+					{
+						// Give to the new position?
+						Position newPos = null;
+						if (MyPositions.Count > 0)
+							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+						if (newPos == null)
+						{
+							newPos = new Position();
+							newPos.Security = newSec;
+							newPos.Quantity = selectedTransaction.Quantity;
+							TheAccount.Positions.Add(newPos);
+							ModelService.UpdateAccount(TheAccount);
+						}
+						else
+						{
+							newPos.Quantity += selectedTransaction.Quantity;
+							ModelService.UpdatePosition(newPos);
+						}
+					}
+					// The Security stays the same, so maybe something else changed.
+					else if (selectedTransaction.TheTransaction.Security.SecurityId == newSec.SecurityId)
+					{
+						// Get the Position for this security.
+						Position existingPos = MyPositions.First(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+
+						// Subtract the old Quantity.
+						existingPos.Quantity -= selectedTransaction.TheTransaction.Quantity;
+
+						// Add the new Quantity.
+						existingPos.Quantity += selectedTransaction.Quantity;
+
+						ModelService.UpdatePosition(existingPos);
+					}
+					else
+					{
+						// If we get here then there is a corner case I didn't cover.
+						throw new NotImplementedException();
+					}
+
+					selectedTransaction.TheTransaction.Security = newSec;
+
+					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
+					selectedTransaction.TheTransaction.Quantity = selectedTransaction.Quantity;
+					selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
+					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
+
+					// TODO: Figure out why this throws an exception when changing the quantity of a Buy transaction.
+					ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
 					// Change Security?
 					// TODO: Assume Security already exists.
-					Debug.WriteLine("Buy: Symbol is " + selectedTransaction.Symbol);
-					Security theSec = ModelService.GetSecurities().Find(s => s.Symbol == selectedTransaction.Symbol);
-					selectedTransaction.TheTransaction.Security = theSec;
 
 					// Change Account.Positions?
 					// Case 1: Brand new position, means existing records not modified; new record added.
@@ -90,7 +183,7 @@ namespace Couatl3.ViewModels
 					// Change Price?
 					// Change Position?
 				}
-				ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+
 
 				CalculateCashBalance();
 			}
@@ -120,9 +213,9 @@ namespace Couatl3.ViewModels
 			MyTransactions = new ObservableCollection<Transaction_VM>();
 			foreach (var t in TheAccount.Transactions)
 			{
-				Transaction_VM pvm = new Transaction_VM();
-				pvm.TheTransaction = t;
-				MyTransactions.Add(pvm);
+				Transaction_VM tvm = new Transaction_VM();
+				tvm.TheTransaction = t;
+				MyTransactions.Add(tvm);
 			}
 
 			CalculateCashBalance();
@@ -202,13 +295,20 @@ namespace Couatl3.ViewModels
 			{
 				theTransaction = value;
 
+				Date = theTransaction.Date;
 				type = (ModelService.TransactionType)theTransaction.Type;
+				//Symbol = (theTransaction.Security != null) ? theTransaction.Security.Symbol : null;
+				//Symbol = theTransaction.Security ?? theTransaction.Security.Symbol;
+				Symbol = theTransaction.Security?.Symbol;
+				Quantity = theTransaction.Quantity;
+				Fee = theTransaction.Fee;
+				Value = theTransaction.Value;
 			}
 		}
 
-		public List<ComboBoxXactType> XactTypeList { get; set; }
-		public List<string> SecSymbolList { get; set; }
+		public DateTime Date { get; set; }
 
+		public List<ComboBoxXactType> XactTypeList { get; set; }
 		private ModelService.TransactionType type;
 		public ModelService.TransactionType Type
 		{
@@ -219,13 +319,20 @@ namespace Couatl3.ViewModels
 			set
 			{
 				type = value;
-				theTransaction.Type = (int)type;
-				RaisePropertyChanged("Type");
-				RaisePropertyChanged("TheTransaction");
+				//theTransaction.Type = (int)type;
+				//RaisePropertyChanged("Type");
+				//RaisePropertyChanged("TheTransaction");
 			}
 		}
 
+		public List<string> SecSymbolList { get; set; }
 		public string Symbol { get; set; }
+
+		public decimal Quantity { get; set; }
+
+		public decimal Fee { get; set; }
+
+		public decimal Value { get; set; }
 
 		public decimal CashBalance { get; set; } = 0.0M;
 
