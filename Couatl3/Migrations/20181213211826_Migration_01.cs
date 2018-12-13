@@ -45,7 +45,7 @@ namespace Couatl3.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Quantity = table.Column<decimal>(nullable: false),
                     SecurityId = table.Column<int>(nullable: false),
-                    AccountId = table.Column<int>(nullable: true)
+                    AccountId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,7 +55,7 @@ namespace Couatl3.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "AccountId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Positions_Securities_SecurityId",
                         column: x => x.SecurityId,

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Couatl3.Migrations
 {
     [DbContext(typeof(CouatlContext))]
-    [Migration("20181207223038_Migration_01")]
+    [Migration("20181213211826_Migration_01")]
     partial class Migration_01
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,7 +61,7 @@ namespace Couatl3.Migrations
                     b.Property<int>("PositionId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AccountId");
+                    b.Property<int>("AccountId");
 
                     b.Property<decimal>("Quantity");
 
@@ -153,9 +153,10 @@ namespace Couatl3.Migrations
 
             modelBuilder.Entity("Couatl3.Models.Position", b =>
                 {
-                    b.HasOne("Couatl3.Models.Account")
+                    b.HasOne("Couatl3.Models.Account", "Account")
                         .WithMany("Positions")
-                        .HasForeignKey("AccountId");
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Couatl3.Models.Security", "Security")
                         .WithMany()

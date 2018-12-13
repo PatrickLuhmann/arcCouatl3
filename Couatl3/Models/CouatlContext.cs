@@ -135,6 +135,7 @@ namespace Couatl3.Models
 		public decimal Fee { get; set; } = 0.0M;
 		public DateTime Date { get; set; } = DateTime.Now;
 
+		public int? SecurityId { get; set; }
 		public Security Security { get; set; }
 
 		public int AccountId { get; set; }
@@ -181,5 +182,8 @@ namespace Couatl3.Models
 
 		public int SecurityId { get; set; }
 		public Security Security { get; set; }
+
+		public int AccountId { get; set; }
+		public Account Account { get; set; }
 	}
 }

@@ -59,7 +59,7 @@ namespace Couatl3.Migrations
                     b.Property<int>("PositionId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int?>("AccountId");
+                    b.Property<int>("AccountId");
 
                     b.Property<decimal>("Quantity");
 
@@ -151,9 +151,10 @@ namespace Couatl3.Migrations
 
             modelBuilder.Entity("Couatl3.Models.Position", b =>
                 {
-                    b.HasOne("Couatl3.Models.Account")
+                    b.HasOne("Couatl3.Models.Account", "Account")
                         .WithMany("Positions")
-                        .HasForeignKey("AccountId");
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Couatl3.Models.Security", "Security")
                         .WithMany()
