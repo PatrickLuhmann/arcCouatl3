@@ -432,6 +432,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(1006.95M, actXact.Value);
 		}
 
+		[TestMethod]
 		public void UpdateTransactionToAddToExistingPosition()
 		{
 			// ASSEMBLE
@@ -445,13 +446,21 @@ namespace Couatl3_UnitTest
 			};
 			ModelService.AddAccount(theAcct);
 
-			// The position MUST have a security (foreign key constraint).
-			Security theSec = new Security
+			// The position MUST have a security (foreign key constraint), so
+			// make one if none exist.
+			List<Security> SecurityListBefore = ModelService.GetSecurities();
+			Security theSec;
+			if (SecurityListBefore.Count > 0)
+				theSec = SecurityListBefore[0];
+			else
 			{
-				Name = "Xylophones Inc.",
-				Symbol = "XYZ"
-			};
-			ModelService.AddSecurity(theSec);
+				theSec = new Security
+				{
+					Name = "Xylophones Inc.",
+					Symbol = "XYZ"
+				};
+				ModelService.AddSecurity(theSec);
+			}
 
 			// Add the first base transaction.
 			Transaction baseXact = new Transaction
@@ -463,6 +472,7 @@ namespace Couatl3_UnitTest
 
 			// Change it to a Buy, which causes a new Position to be added, then the Transaction is updated.
 			// Add a new Position corresponding to the new transaction.
+			// NOTE: Something strange is going on with the Security objects, which is why we use newSec instead of theSec.
 			Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
 			Position thePos = new Position
 			{
@@ -475,7 +485,15 @@ namespace Couatl3_UnitTest
 			// Now update the existing transaction to make it a Buy.
 			Transaction updateXact = theAcct.Transactions.Find(t => t.TransactionId == baseXact.TransactionId);
 			updateXact.Type = 3;
+#if true
+			// This works for its UpdateTransaction(). However, it seems that if I do this here,
+			// then I MUST use SecurityId when changing the second transaction to a Buy.
 			updateXact.Security = newSec;
+#elif false
+			updateXact.SecurityId = newSec.SecurityId;
+#else
+			// Leave the security what it is.
+#endif
 			updateXact.Date = DateTime.Now;
 			updateXact.Quantity = 100;
 			updateXact.Fee = 6.95M;
@@ -490,7 +508,6 @@ namespace Couatl3_UnitTest
 			theAcct.Transactions.Add(baseXact2);
 			ModelService.UpdateAccount(theAcct);
 
-			// TODO: Do I need all of these?
 			List<Account> AccountListBefore = ModelService.GetAccounts(false);
 			List<Transaction> TransactionListBefore = ModelService.GetTransactions();
 			List<Position> PositionListBefore = ModelService.GetPositions();
@@ -504,11 +521,23 @@ namespace Couatl3_UnitTest
 			
 			// Set the Security.
 			Security newSec2 = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
-			testXact.Security = newSec2;
-			
+#if false
+			// This doesn't work, and I don't know why.
+//			testXact.Security = newSec2;
+#elif true
+			// This works.
+			testXact.SecurityId = newSec2.SecurityId;
+#elif false
+			// This doesn't work, and I don't know why.
+			testXact.Security = newSec;
+#else
+			// This doesn't work, and I don't know why.
+			testXact.Security = theSec;
+#endif
+
 			// Get the existing Position.
 			// NOTE: This is different from the app code that I am trying to simulate.
-			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == newSec.SecurityId);
+			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == newSec.SecurityId && p.AccountId == theAcct.AccountId);
 			newPos2.Quantity += 200;
 			ModelService.UpdatePosition(newPos2);
 
@@ -534,9 +563,9 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
 
 			List<Transaction> TransactionListAfter = ModelService.GetTransactions();
-			Assert.AreEqual(TransactionListBefore.Count + 1, TransactionListAfter.Count);
+			Assert.AreEqual(TransactionListBefore.Count, TransactionListAfter.Count);
 			Transaction actXact = TransactionListAfter.Find(t => t.TransactionId == testXact.TransactionId);
-			Assert.AreEqual(1, actXact.Type);
+			Assert.AreEqual(3, actXact.Type);
 			Assert.AreEqual(200M, actXact.Quantity);
 			Assert.AreEqual(0.0M, actXact.Fee);
 			Assert.AreEqual(2000.00M, actXact.Value);

@@ -19,7 +19,8 @@ namespace Couatl3.Models
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			// The path is relative to the main assembly (.exe).
-			optionsBuilder.UseSqlite(@"Data Source=couatl3.db");
+			optionsBuilder.UseSqlite(@"Data Source=couatl3.db")
+				.EnableSensitiveDataLogging();
 		}
 	}
 #if false
