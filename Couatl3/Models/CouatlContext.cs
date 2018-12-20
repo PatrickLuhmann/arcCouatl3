@@ -48,8 +48,7 @@ namespace Couatl3.Models
 		public decimal Fee { get; set; } = 0.0M;
 		public DateTime Date { get; set; } = DateTime.Now;
 
-		public int? SecurityId { get; set; }
-		public Security Security { get; set; }
+		public int SecurityId { get; set; } = -1;
 
 		public int AccountId { get; set; }
 		public Account Account { get; set; }
@@ -63,8 +62,7 @@ namespace Couatl3.Models
 		public DateTime Date { get; set; }
 		public bool Closing { get; set; } = false;
 
-		public int SecurityId { get; set; }
-		public Security Security { get; set; }
+		public int SecurityId { get; set; } = -1;
 	}
 
 	public class Security
@@ -93,8 +91,7 @@ namespace Couatl3.Models
 
 		public decimal Quantity { get; set; } = 0.0M;
 
-		public int SecurityId { get; set; }
-		public Security Security { get; set; }
+		public int SecurityId { get; set; } = -1;
 
 		public int AccountId { get; set; }
 		public Account Account { get; set; }

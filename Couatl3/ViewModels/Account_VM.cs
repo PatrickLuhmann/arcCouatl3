@@ -81,7 +81,6 @@ namespace Couatl3.ViewModels
 				{
 					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
 					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
-					selectedTransaction.TheTransaction.Security = null; // N/A for Deposit/Withdrawal
 					selectedTransaction.TheTransaction.Quantity = 0.0M; // N/A for Deposit/Withdrawal
 					selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
 					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
@@ -94,25 +93,24 @@ namespace Couatl3.ViewModels
 					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
 
 					// If Security has changed and the original was not null, then back out that Position.
-					Debug.WriteLine("Buy: Symbol was " + selectedTransaction.TheTransaction.Security + " and is now " + selectedTransaction.Symbol);
+					Debug.WriteLine("Buy: Symbol was " + ModelService.GetSymbolFromId(selectedTransaction.TheTransaction.SecurityId) + " and is now " + selectedTransaction.Symbol);
 					Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == selectedTransaction.Symbol);
-					if (selectedTransaction.TheTransaction.Security != null &&
-						selectedTransaction.TheTransaction.Security.SecurityId != newSec.SecurityId)
+					if (selectedTransaction.TheTransaction.SecurityId != newSec.SecurityId)
 					{
 						// Set the security in the transaction.
-						selectedTransaction.TheTransaction.Security = newSec;
+						selectedTransaction.TheTransaction.SecurityId = newSec.SecurityId;
 
 						// Take away from the old position...
-						Position oldPos = MyPositions.First(p => p.ThePosition.Security.SecurityId == selectedTransaction.TheTransaction.Security.SecurityId).ThePosition;
+						Position oldPos = MyPositions.First(p => p.ThePosition.SecurityId == selectedTransaction.TheTransaction.SecurityId).ThePosition;
 						oldPos.Quantity -= selectedTransaction.Quantity;
 						ModelService.UpdatePosition(oldPos);
 
 						// ... and give to the new position.
-						Position newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+						Position newPos = MyPositions.FirstOrDefault(p => p.ThePosition.SecurityId == newSec.SecurityId).ThePosition;
 						if (newPos == null)
 						{
 							newPos = new Position();
-							newPos.Security = newSec;
+							newPos.SecurityId = newSec.SecurityId;
 							newPos.Quantity = selectedTransaction.Quantity;
 							TheAccount.Positions.Add(newPos);
 							ModelService.UpdateAccount(TheAccount);
@@ -124,7 +122,7 @@ namespace Couatl3.ViewModels
 						}
 					}
 					// Changing from Null, so just add to position.
-					else if (selectedTransaction.TheTransaction.Security == null)
+					else if (selectedTransaction.TheTransaction.SecurityId <= 0)
 					{
 						// Set the security in the transaction.
 						selectedTransaction.TheTransaction.SecurityId = newSec.SecurityId;
@@ -141,12 +139,12 @@ namespace Couatl3.ViewModels
 						Position newPos = null;
 						if (MyPositions.Count > 0)
 						{
-							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.Security.SecurityId == newSec.SecurityId)?.ThePosition;
+							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.SecurityId == newSec.SecurityId)?.ThePosition;
 						}
 						if (newPos == null)
 						{
 							newPos = new Position();
-							newPos.Security = newSec;
+							newPos.SecurityId = newSec.SecurityId;
 							newPos.Quantity = selectedTransaction.Quantity;
 							TheAccount.Positions.Add(newPos);
 							ModelService.UpdateAccount(TheAccount);
@@ -158,10 +156,10 @@ namespace Couatl3.ViewModels
 						}
 					}
 					// The Security stays the same, so maybe something else changed.
-					else if (selectedTransaction.TheTransaction.Security.SecurityId == newSec.SecurityId)
+					else if (selectedTransaction.TheTransaction.SecurityId == newSec.SecurityId)
 					{
 						// Get the Position for this security.
-						Position existingPos = MyPositions.First(p => p.ThePosition.Security.SecurityId == newSec.SecurityId).ThePosition;
+						Position existingPos = MyPositions.First(p => p.ThePosition.SecurityId == newSec.SecurityId).ThePosition;
 
 						// Subtract the old Quantity.
 						existingPos.Quantity -= selectedTransaction.TheTransaction.Quantity;
@@ -290,7 +288,7 @@ namespace Couatl3.ViewModels
 			set
 			{
 				thePosition = value;
-				Value = thePosition.Quantity * ModelService.GetNewestPrice(thePosition.Security);
+				Value = thePosition.Quantity * ModelService.GetNewestPrice(thePosition.SecurityId);
 			}
 		}
 		public decimal Value { get; set; }
@@ -316,7 +314,7 @@ namespace Couatl3.ViewModels
 				type = (ModelService.TransactionType)theTransaction.Type;
 				//Symbol = (theTransaction.Security != null) ? theTransaction.Security.Symbol : null;
 				//Symbol = theTransaction.Security ?? theTransaction.Security.Symbol;
-				Symbol = theTransaction.Security?.Symbol;
+				Symbol = ModelService.GetSymbolFromId(theTransaction.SecurityId);
 				Quantity = theTransaction.Quantity;
 				Fee = theTransaction.Fee;
 				Value = theTransaction.Value;

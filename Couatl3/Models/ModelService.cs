@@ -80,6 +80,13 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public string GetSymbolFromId(int id)
+		{
+			// $$INVALID$$ means id <= 0.
+			// $$NONE$$ means id is not in the db.
+			return "$$INVALID$$";
+		}
+
 		static public void UpdatePosition(Position pos)
 		{
 			using (var db = new CouatlContext())
@@ -122,7 +129,6 @@ namespace Couatl3.Models
 			{
 				theList = db.Transactions
 					.Include(t => t.Account)
-					.Include(t => t.Security)
 					.ToList();
 			}
 			return theList;
@@ -134,7 +140,6 @@ namespace Couatl3.Models
 			using (var db = new CouatlContext())
 			{
 				theList = db.Positions
-					.Include(p => p.Security)
 					.ToList();
 			}
 			return theList;
@@ -152,6 +157,11 @@ namespace Couatl3.Models
 		}
 
 		static public decimal GetNewestPrice(Security security)
+		{
+			return 0;
+		}
+
+		static public decimal GetNewestPrice(int id)
 		{
 			return 0;
 		}

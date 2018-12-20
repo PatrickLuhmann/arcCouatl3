@@ -82,7 +82,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 67.89M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -90,7 +89,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 2.39M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -136,7 +134,7 @@ namespace Couatl3_UnitTest
 			Position thePos = new Position
 			{
 				Quantity = 100,
-				Security = theSec,
+				SecurityId = theSec.SecurityId,
 			};
 			theAcct.Positions.Add(thePos);
 			ModelService.UpdateAccount(theAcct);
@@ -168,7 +166,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 67.89M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -176,7 +173,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 2.39M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -221,7 +217,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 67.89M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -229,7 +224,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 2.39M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -270,7 +264,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 67.89M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -278,7 +271,6 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Security = null,
 				Value = 2.39M
 			};
 			theAcct.Transactions.Add(theXact);
@@ -327,7 +319,7 @@ namespace Couatl3_UnitTest
 			Position thePos = new Position
 			{
 				Quantity = 100,
-				Security = theSec,
+				SecurityId = theSec.SecurityId,
 			};
 			theAcct.Positions.Add(thePos);
 			ModelService.UpdateAccount(theAcct);
@@ -352,7 +344,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
 			Assert.AreEqual(thePos.Quantity, actAcct.Positions[0].Quantity);
 			Assert.AreEqual(223.45M, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].SecurityId);
 		}
 
 		[TestMethod]
@@ -394,7 +386,7 @@ namespace Couatl3_UnitTest
 			Position thePos = new Position
 			{
 				Quantity = 100,
-				Security = theSec,
+				SecurityId = theSec.SecurityId,
 			};
 			theAcct.Positions.Add(thePos);
 			ModelService.UpdateAccount(theAcct);
@@ -406,7 +398,7 @@ namespace Couatl3_UnitTest
 			updateXact.Fee = 6.95M;
 			updateXact.Value = 1006.95M;
 			Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == theSec.Symbol);
-			updateXact.Security = newSec;
+			updateXact.SecurityId = newSec.SecurityId;
 
 			ModelService.UpdateTransaction(updateXact);
 
@@ -421,7 +413,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(1, actAcct.Positions.Count);
 			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
 			Assert.AreEqual(100, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].SecurityId);
 
 			List<Transaction> TransactionListAfter = ModelService.GetTransactions();
 			Assert.AreEqual(TransactionListBefore.Count, TransactionListAfter.Count);
@@ -478,9 +470,9 @@ namespace Couatl3_UnitTest
 			{
 				Quantity = 100,
 #if false
-				Security = newSec,
+				SecurityId = newSec.SecurityId,
 #else
-				Security = theSec,
+				SecurityId = theSec.SecurityId,
 #endif
 		};
 			theAcct.Positions.Add(thePos);
@@ -496,7 +488,7 @@ namespace Couatl3_UnitTest
 #elif false
 			updateXact.SecurityId = newSec.SecurityId;
 #elif true
-			updateXact.Security = theSec;
+			updateXact.SecurityId = theSec.SecurityId;
 #else
 			// Leave the security what it is.
 #endif
@@ -538,12 +530,12 @@ namespace Couatl3_UnitTest
 			testXact.Security = newSec;
 #else
 			// This doesn't work, and I don't know why.
-			testXact.Security = theSec;
+			testXact.SecurityId = theSec.SecurityId;
 #endif
 
 			// Get the existing Position.
 			// NOTE: This is different from the app code that I am trying to simulate.
-			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == theSec.SecurityId && p.AccountId == theAcct.AccountId);
+			Position newPos2 = PositionListBefore.Find(p => p.SecurityId == theSec.SecurityId && p.AccountId == theAcct.AccountId);
 			newPos2.Quantity += 200;
 			ModelService.UpdatePosition(newPos2);
 
@@ -566,7 +558,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
 			Assert.AreEqual(300, actAcct.Positions[0].Quantity);
 			// Comparing .Security doesn't work, so I just compare the ID.
-			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].Security.SecurityId);
+			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].SecurityId);
 
 			List<Transaction> TransactionListAfter = ModelService.GetTransactions();
 			Assert.AreEqual(TransactionListBefore.Count, TransactionListAfter.Count);
