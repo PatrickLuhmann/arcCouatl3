@@ -71,6 +71,15 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void AddSecurity(Security sec)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Securities.Add(sec);
+				db.SaveChanges();
+			}
+		}
+
 		static public void UpdatePosition(Position pos)
 		{
 			using (var db = new CouatlContext())
@@ -140,15 +149,6 @@ namespace Couatl3.Models
 					.ToList();
 			}
 			return theList;
-		}
-
-		static public void AddSecurity(Security sec)
-		{
-			using (var db = new CouatlContext())
-			{
-				db.Securities.Add(sec);
-				db.SaveChanges();
-			}
 		}
 
 		static public decimal GetNewestPrice(Security security)

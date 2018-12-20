@@ -477,20 +477,26 @@ namespace Couatl3_UnitTest
 			Position thePos = new Position
 			{
 				Quantity = 100,
+#if false
 				Security = newSec,
-			};
+#else
+				Security = theSec,
+#endif
+		};
 			theAcct.Positions.Add(thePos);
 			ModelService.UpdateAccount(theAcct);
 
 			// Now update the existing transaction to make it a Buy.
 			Transaction updateXact = theAcct.Transactions.Find(t => t.TransactionId == baseXact.TransactionId);
 			updateXact.Type = 3;
-#if true
+#if false
 			// This works for its UpdateTransaction(). However, it seems that if I do this here,
 			// then I MUST use SecurityId when changing the second transaction to a Buy.
 			updateXact.Security = newSec;
 #elif false
 			updateXact.SecurityId = newSec.SecurityId;
+#elif true
+			updateXact.Security = theSec;
 #else
 			// Leave the security what it is.
 #endif
@@ -524,7 +530,7 @@ namespace Couatl3_UnitTest
 #if false
 			// This doesn't work, and I don't know why.
 //			testXact.Security = newSec2;
-#elif true
+#elif false
 			// This works.
 			testXact.SecurityId = newSec2.SecurityId;
 #elif false
@@ -537,7 +543,7 @@ namespace Couatl3_UnitTest
 
 			// Get the existing Position.
 			// NOTE: This is different from the app code that I am trying to simulate.
-			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == newSec.SecurityId && p.AccountId == theAcct.AccountId);
+			Position newPos2 = PositionListBefore.Find(p => p.Security.SecurityId == theSec.SecurityId && p.AccountId == theAcct.AccountId);
 			newPos2.Quantity += 200;
 			ModelService.UpdatePosition(newPos2);
 
