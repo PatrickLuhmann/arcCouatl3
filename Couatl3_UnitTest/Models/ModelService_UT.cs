@@ -9,7 +9,7 @@ namespace Couatl3_UnitTest
 	public class ModelService_UT
 	{
 		[TestMethod]
-		public void AddAccount()
+		public void AddAccount_Basic()
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
@@ -66,30 +66,27 @@ namespace Couatl3_UnitTest
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("UAAX", "Update Account Add Xact");
 
-			// Add a new account to the database.
-			Account theAcct = new Account
-			{
-				Name = "Test Account Name",
-				Institution = "Test Institution Name",
-			};
-			ModelService.AddAccount(theAcct);
-			List<Account> AccountListBefore = ModelService.GetAccounts(false);
-			List<Transaction> XactListBefore = ModelService.GetTransactions();
+			List<Account> beforeAccountList = ModelService.GetAccounts(false);
+			List<Transaction> beforeXactList = ModelService.GetTransactions();
 
 			// ACT
 			Transaction theXact = new Transaction
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Value = 67.89M
+				Value = 67.89M,
+				SecurityId = theSec.SecurityId,
 			};
 			theAcct.Transactions.Add(theXact);
 			theXact = new Transaction
 			{
 				Date = DateTime.Now,
 				Type = 1,
-				Value = 2.39M
+				Value = 2.39M,
+				SecurityId = theSec.SecurityId,
 			};
 			theAcct.Transactions.Add(theXact);
 
@@ -97,67 +94,31 @@ namespace Couatl3_UnitTest
 
 			// ASSERT
 			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
-			List<Account> AccountListAfter = ModelService.GetAccounts(false);
-			List<Transaction> XactListAfter = ModelService.GetTransactions();
+			List<Account> afterAccountList = ModelService.GetAccounts(false);
+			List<Transaction> afterXactList = ModelService.GetTransactions();
 
-			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
-			Assert.AreEqual(XactListBefore.Count + 2, XactListAfter.Count);
-			Assert.IsNotNull(XactListAfter.Find(x => x.TransactionId == theXactID[0]));
-			Assert.IsNotNull(XactListAfter.Find(x => x.TransactionId == theXactID[1]));
+			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
+			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
+			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == theXactID[0]);
+			Assert.IsNotNull(actXact0);
+			Assert.AreEqual(1, actXact0.Type);
+			Assert.AreEqual(67.89M, actXact0.Value);
+			Assert.AreEqual(theSec.SecurityId, actXact0.SecurityId);
+			Transaction actXact1 = afterXactList.Find(x => x.TransactionId == theXactID[1]);
+			Assert.IsNotNull(actXact1);
+			Assert.AreEqual(1, actXact1.Type);
+			Assert.AreEqual(2.39M, actXact1.Value);
+			Assert.AreEqual(theSec.SecurityId, actXact1.SecurityId);
 		}
 
 		[TestMethod]
-		public void UpdateAccount_AddPosition()
-		{
-			// ASSEMBLE
-			ModelService.Initialize();
-
-			// Add a new account to the database.
-			Account theAcct = new Account
-			{
-				Name = "Test Account Name",
-				Institution = "Test Institution Name",
-			};
-			ModelService.AddAccount(theAcct);
-			List<Account> AccountListBefore = ModelService.GetAccounts(false);
-			List<Position> PositionListBefore = ModelService.GetPositions();
-
-			// The position MUST have a security (foreign key constraint).
-			Security theSec = new Security
-			{
-				Name = "Xylophones Inc.",
-				Symbol = "XYZ"
-			};
-			ModelService.AddSecurity(theSec);
-
-			// ACT
-			Position thePos = new Position
-			{
-				Quantity = 100,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Positions.Add(thePos);
-			ModelService.UpdateAccount(theAcct);
-
-			// ASSERT
-			List<Account> AccountListAfter = ModelService.GetAccounts(false);
-			List<Position> PositionListAfter = ModelService.GetPositions();
-			int[] thePosID = { theAcct.Positions[0].PositionId };
-
-			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
-			Assert.AreEqual(PositionListBefore.Count + 1, PositionListAfter.Count);
-			Assert.IsNotNull(PositionListAfter.Find(x => x.PositionId == thePosID[0]));
-		}
-
-		[TestMethod]
-		public void UpdateTransaction()
+		public void UpdateTransaction_NoAffectOnPositions()
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
 
 			// Make a new account and a couple of transactions.
-			Account theAcct = new Account { Name = "Delete Account", Institution = "Unit Test" };
-			ModelService.AddAccount(theAcct);
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
 			int theAcctID = theAcct.AccountId;
 
 			//Security theSec = new Security { Name = "Awesome Inc.", Symbol = "XYZ" };
@@ -184,7 +145,7 @@ namespace Couatl3_UnitTest
 			List<Transaction> XactListBefore = ModelService.GetTransactions();
 
 			// ACT
-			theXact.Type = 2;
+			theXact.Type = (int)ModelService.TransactionType.Withdrawal;
 			theXact.Value = 9.05M;
 			ModelService.UpdateTransaction(theXact);
 
@@ -204,13 +165,7 @@ namespace Couatl3_UnitTest
 			// ASSEMBLE
 			ModelService.Initialize();
 
-			// Add a new account to the database.
-			Account theAcct = new Account
-			{
-				Name = "Test Account Name",
-				Institution = "Test Institution Name",
-			};
-			ModelService.AddAccount(theAcct);
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
 
 			// Add a couple of transactions.
 			Transaction theXact = new Transaction
@@ -295,26 +250,48 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void UpdateAccount_AddPosition()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("UAAP", "Update Account Add Position");
+
+			List<Account> AccountListBefore = ModelService.GetAccounts(false);
+			List<Position> PositionListBefore = ModelService.GetPositions();
+
+			// ACT
+			Position thePos = new Position
+			{
+				Quantity = 100,
+				SecurityId = theSec.SecurityId,
+			};
+			theAcct.Positions.Add(thePos);
+			ModelService.UpdateAccount(theAcct);
+
+			// ASSERT
+			List<Account> AccountListAfter = ModelService.GetAccounts(false);
+			List<Position> PositionListAfter = ModelService.GetPositions();
+			int[] thePosID = { theAcct.Positions[0].PositionId };
+
+			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
+			Assert.AreEqual(100, theAcct.Positions[0].Quantity);
+			Assert.AreEqual(theSec.SecurityId, theAcct.Positions[0].SecurityId);
+
+			Assert.AreEqual(PositionListBefore.Count + 1, PositionListAfter.Count);
+			Position actPos = PositionListAfter.Find(x => x.PositionId == thePosID[0]);
+			Assert.AreEqual(100, actPos.Quantity);
+			Assert.AreEqual(theSec.SecurityId, actPos.SecurityId);
+		}
+
+		[TestMethod]
 		public void UpdatePosition()
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
 
-			// Add a new account to the database.
-			Account theAcct = new Account
-			{
-				Name = "Test Account Name",
-				Institution = "Test Institution Name",
-			};
-			ModelService.AddAccount(theAcct);
-
-			// The position MUST have a security (foreign key constraint).
-			Security theSec = new Security
-			{
-				Name = "Xylophones Inc.",
-				Symbol = "XYZ"
-			};
-			ModelService.AddSecurity(theSec);
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("UP", "Update Position");
 
 			Position thePos = new Position
 			{
@@ -348,6 +325,7 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		[Ignore]
 		public void UpdateTransactionToAddNewPosition()
 		{
 			// ASSEMBLE
@@ -425,6 +403,7 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		[Ignore]
 		public void UpdateTransactionToAddToExistingPosition()
 		{
 			// ASSEMBLE
@@ -570,6 +549,97 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void AddSecurity_Basic()
+		{
+			// ASSEMBLE
+			List<Security> beforeSecList = ModelService.GetSecurities();
+
+			// ACT
+			string sym = "XYZ";
+			string name = "Xylophones Inc.";
+			Security theSec = new Security { Symbol = sym, Name = name };
+			ModelService.AddSecurity(theSec);
+
+			// ASSERT
+			List<Security> afterSecList = ModelService.GetSecurities();
+			Assert.AreEqual(beforeSecList.Count + 1, afterSecList.Count);
+			Assert.IsTrue(theSec.SecurityId > 0);
+			Security actSec = afterSecList.Find(s => s.SecurityId == theSec.SecurityId);
+			Assert.AreEqual(sym, actSec.Symbol);
+			Assert.AreEqual(name, actSec.Name);
+		}
+
+		[TestMethod]
+		public void DeleteSecurity_Basic()
+		{
+			// ASSEMBLE
+			List<Security> beforeSecList = ModelService.GetSecurities();
+			string sym = "DSB";
+			string name = "Delete Security Basic";
+			Security theSec = new Security { Symbol = sym, Name = name };
+			ModelService.AddSecurity(theSec);
+
+			// ACT
+			ModelService.DeleteSecurity(theSec);
+			Assert.IsTrue(theSec.SecurityId > 0);
+
+			// ASSERT
+			List<Security> afterSecList = ModelService.GetSecurities();
+			Assert.AreEqual(beforeSecList.Count, afterSecList.Count);
+			Security actSec = afterSecList.Find(s => s.SecurityId == theSec.SecurityId);
+			Assert.IsNull(actSec);
+		}
+
+		[TestMethod]
+		public void GetSymbolFromId_Basic()
+		{
+			// ASSEMBLE
+			string sym = "XYZ";
+			string name = "Xylophones Inc.";
+			Security theSec = new Security { Symbol = sym, Name = name };
+			ModelService.AddSecurity(theSec);
+
+			// ACT
+			string actSym = ModelService.GetSymbolFromId(theSec.SecurityId);
+
+			// ASSERT
+			Assert.AreEqual(sym, actSym);
+		}
+
+		[TestMethod]
+		public void GetSymbolFromId_Invalid()
+		{
+			// ASSEMBLE
+			string expSym = "$$INVALID$$";
+
+			// ACT
+			string actSym = ModelService.GetSymbolFromId(0);
+
+			// ASSERT
+			Assert.AreEqual(expSym, actSym);
+		}
+
+		[TestMethod]
+		public void GetSymbolFromId_NotFound()
+		{
+			// ASSEMBLE
+			// Add then delete a Security so we know the ID will not be found.
+			string sym = "GONE";
+			string name = "So Long Corp.";
+			Security theSec = new Security { Symbol = sym, Name = name };
+			ModelService.AddSecurity(theSec);
+			ModelService.DeleteSecurity(theSec);
+			string expSym = "$$NONE$$";
+
+			// ACT
+			string actSym = ModelService.GetSymbolFromId(theSec.SecurityId);
+
+			// ASSERT
+			Assert.AreEqual(expSym, actSym);
+		}
+
+		[TestMethod]
+		[Ignore]
 		public void Test_GetNewestPrice()
 		{
 			// ASSEMBLE
@@ -578,5 +648,25 @@ namespace Couatl3_UnitTest
 
 			// ASSERT
 		}
+
+		#region Helper Functions
+		Account AddAccount(string name, string inst)
+		{
+			Account theAcct = new Account
+			{
+				Name = name,
+				Institution = inst,
+			};
+			ModelService.AddAccount(theAcct);
+			return theAcct;
+		}
+
+		Security AddSecurity(string symbol, string name)
+		{
+			Security theSec = new Security { Symbol = symbol, Name = name };
+			ModelService.AddSecurity(theSec);
+			return theSec;
+		}
+		#endregion
 	}
 }

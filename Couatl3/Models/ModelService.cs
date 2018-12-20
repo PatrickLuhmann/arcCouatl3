@@ -17,6 +17,7 @@ namespace Couatl3.Models
 			}
 		}
 
+		#region Account
 		/// <summary>
 		/// Add an account to the database.
 		/// </summary>
@@ -50,53 +51,6 @@ namespace Couatl3.Models
 			}
 		}
 
-		static public void UpdateTransaction(Transaction xact)
-		{
-			using (var db = new CouatlContext())
-			{
-				db.Transactions.Attach(xact);
-				db.Entry(xact).State = EntityState.Modified;
-				db.SaveChanges();
-			}
-		}
-
-		static public void DeleteTransaction(Transaction xact)
-		{
-			Account acct = xact.Account;
-
-			using (var db = new CouatlContext())
-			{
-				db.Transactions.Remove(xact);
-				db.SaveChanges();
-			}
-		}
-
-		static public void AddSecurity(Security sec)
-		{
-			using (var db = new CouatlContext())
-			{
-				db.Securities.Add(sec);
-				db.SaveChanges();
-			}
-		}
-
-		static public string GetSymbolFromId(int id)
-		{
-			// $$INVALID$$ means id <= 0.
-			// $$NONE$$ means id is not in the db.
-			return "$$INVALID$$";
-		}
-
-		static public void UpdatePosition(Position pos)
-		{
-			using (var db = new CouatlContext())
-			{
-				db.Positions.Attach(pos);
-				db.Entry(pos).State = EntityState.Modified;
-				db.SaveChanges();
-			}
-		}
-
 		static public List<Account> GetAccounts(bool openOnly)
 		{
 			// TODO: Figure out why this statement is needed.
@@ -121,6 +75,89 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
+		#endregion
+
+		#region Security
+		static public void AddSecurity(Security sec)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Securities.Add(sec);
+				db.SaveChanges();
+			}
+		}
+
+		static public void DeleteSecurity(Security sec)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Securities.Attach(sec);
+				db.Securities.Remove(sec);
+				db.SaveChanges();
+			}
+		}
+
+		static public string GetSymbolFromId(int id)
+		{
+			// $$INVALID$$ means id <= 0.
+			// $$NONE$$ means id is not in the db.
+			string sym = "$$INVALID$$";
+			if (id > 0)
+				using (var db = new CouatlContext())
+				{
+					List<Security> sec = db.Securities.Where(s => s.SecurityId == id).ToList();
+					if (sec.Count == 1)
+						sym = sec[0].Symbol;
+					else
+						sym = "$$NONE$$";
+				}
+
+			return sym;
+		}
+
+		static public decimal GetNewestPrice(Security security)
+		{
+			return 0;
+		}
+
+		static public decimal GetNewestPrice(int id)
+		{
+			return 0;
+		}
+
+		static public List<Security> GetSecurities()
+		{
+			List<Security> theList;
+			using (var db = new CouatlContext())
+			{
+				theList = db.Securities
+					.ToList();
+			}
+			return theList;
+		}
+		#endregion
+
+		public enum TransactionType
+		{
+			Null = 0,
+			Deposit,
+			Withdrawal,
+			Buy,
+			Sell,
+			Dividend,
+			StockSplit,
+			Invalid
+		}
+
+		static public void UpdateTransaction(Transaction xact)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Transactions.Attach(xact);
+				db.Entry(xact).State = EntityState.Modified;
+				db.SaveChanges();
+			}
+		}
 
 		static public List<Transaction> GetTransactions()
 		{
@@ -134,6 +171,27 @@ namespace Couatl3.Models
 			return theList;
 		}
 
+		static public void DeleteTransaction(Transaction xact)
+		{
+			Account acct = xact.Account;
+
+			using (var db = new CouatlContext())
+			{
+				db.Transactions.Remove(xact);
+				db.SaveChanges();
+			}
+		}
+
+		static public void UpdatePosition(Position pos)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Positions.Attach(pos);
+				db.Entry(pos).State = EntityState.Modified;
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Position> GetPositions()
 		{
 			List<Position> theList;
@@ -143,39 +201,6 @@ namespace Couatl3.Models
 					.ToList();
 			}
 			return theList;
-		}
-
-		static public List<Security> GetSecurities()
-		{
-			List<Security> theList;
-			using (var db = new CouatlContext())
-			{
-				theList = db.Securities
-					.ToList();
-			}
-			return theList;
-		}
-
-		static public decimal GetNewestPrice(Security security)
-		{
-			return 0;
-		}
-
-		static public decimal GetNewestPrice(int id)
-		{
-			return 0;
-		}
-
-		public enum TransactionType
-		{
-			Null = 0,
-			Deposit,
-			Withdrawal,
-			Buy,
-			Sell,
-			Dividend,
-			StockSplit,
-			Invalid
 		}
 	}
 }
