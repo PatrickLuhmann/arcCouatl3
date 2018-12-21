@@ -186,6 +186,7 @@ namespace Couatl3.Models
 			UpdateAccount(theAcct);
 		}
 
+		// TODO: Make this private because the user should be doing delete/add; it is too difficult to change Type.
 		static public void UpdateTransaction(Transaction xact)
 		{
 			using (var db = new CouatlContext())
@@ -235,7 +236,7 @@ namespace Couatl3.Models
 			return theList;
 		}
 
-		static public void UpdatePosition(Position pos)
+		static private void UpdatePosition(Position pos)
 		{
 			using (var db = new CouatlContext())
 			{

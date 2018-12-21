@@ -103,7 +103,7 @@ namespace Couatl3.ViewModels
 						// Take away from the old position...
 						Position oldPos = MyPositions.First(p => p.ThePosition.SecurityId == selectedTransaction.TheTransaction.SecurityId).ThePosition;
 						oldPos.Quantity -= selectedTransaction.Quantity;
-						ModelService.UpdatePosition(oldPos);
+						// TODO: Refactor this! ModelService.UpdatePosition(oldPos);
 
 						// ... and give to the new position.
 						Position newPos = MyPositions.FirstOrDefault(p => p.ThePosition.SecurityId == newSec.SecurityId).ThePosition;
@@ -118,7 +118,7 @@ namespace Couatl3.ViewModels
 						else
 						{
 							newPos.Quantity += selectedTransaction.Quantity;
-							ModelService.UpdatePosition(newPos);
+							// TODO: Refactor this! ModelService.UpdatePosition(newPos);
 						}
 					}
 					// Changing from Null, so just add to position.
@@ -152,7 +152,7 @@ namespace Couatl3.ViewModels
 						else
 						{
 							newPos.Quantity += selectedTransaction.Quantity;
-							ModelService.UpdatePosition(newPos);
+							// TODO: Refactor this! ModelService.UpdatePosition(newPos);
 						}
 					}
 					// The Security stays the same, so maybe something else changed.
@@ -167,7 +167,7 @@ namespace Couatl3.ViewModels
 						// Add the new Quantity.
 						existingPos.Quantity += selectedTransaction.Quantity;
 
-						ModelService.UpdatePosition(existingPos);
+						// TODO: Refactor this! ModelService.UpdatePosition(existingPos);
 					}
 					else
 					{
