@@ -149,6 +149,44 @@ namespace Couatl3.Models
 			Invalid
 		}
 
+		public static void AddTransaction(Account theAcct, Transaction theXact)
+		{
+			// TODO: Data validation here? What to do if there is a problem?
+
+			using (var db = new CouatlContext())
+			{
+				// TODO: Update Positions here if this is a Buy/Sell/StockSplit?
+				switch (theXact.Type)
+				{
+					case (int)TransactionType.Buy:
+						Position thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						if (thePos == null)
+						{
+							thePos = new Position
+							{
+								AccountId = theAcct.AccountId,
+								SecurityId = theXact.SecurityId,
+								Quantity = theXact.Quantity,
+							};
+							// TODO: Refactor this to the new style.
+							theAcct.Positions.Add(thePos);
+							UpdateAccount(theAcct);
+						}
+						else
+						{
+							thePos.Quantity += theXact.Quantity;
+							UpdatePosition(thePos);
+						}
+						break;
+				}
+
+			}
+
+			// Give the transaction to its account.
+			theAcct.Transactions.Add(theXact);
+			UpdateAccount(theAcct);
+		}
+
 		static public void UpdateTransaction(Transaction xact)
 		{
 			using (var db = new CouatlContext())
