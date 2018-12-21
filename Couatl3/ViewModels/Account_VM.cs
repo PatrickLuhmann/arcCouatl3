@@ -46,8 +46,9 @@ namespace Couatl3.ViewModels
 		{
 			// Create the object and update the database.
 			Transaction t = new Transaction();
-			TheAccount.Transactions.Add(t);
-			ModelService.UpdateAccount(TheAccount);
+			// TODO: Refactor to use AddTransaction().
+			//TheAccount.Transactions.Add(t);
+			//ModelService.UpdateAccount(TheAccount);
 
 			// Create the VM object and update the app/UI.
 			Transaction_VM tvm = new Transaction_VM();
@@ -112,8 +113,9 @@ namespace Couatl3.ViewModels
 							newPos = new Position();
 							newPos.SecurityId = newSec.SecurityId;
 							newPos.Quantity = selectedTransaction.Quantity;
-							TheAccount.Positions.Add(newPos);
-							ModelService.UpdateAccount(TheAccount);
+							// TODO: Refactor to rely on add/delete xact
+							//TheAccount.Positions.Add(newPos);
+							//ModelService.UpdateAccount(TheAccount);
 						}
 						else
 						{
@@ -146,8 +148,9 @@ namespace Couatl3.ViewModels
 							newPos = new Position();
 							newPos.SecurityId = newSec.SecurityId;
 							newPos.Quantity = selectedTransaction.Quantity;
-							TheAccount.Positions.Add(newPos);
-							ModelService.UpdateAccount(TheAccount);
+							// TODO: Refactor to rely on add/delete xact
+							//TheAccount.Positions.Add(newPos);
+							//ModelService.UpdateAccount(TheAccount);
 						}
 						else
 						{

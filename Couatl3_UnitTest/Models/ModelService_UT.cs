@@ -62,56 +62,6 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
-		public void UpdateAccount_AddXact()
-		{
-			// ASSEMBLE
-			ModelService.Initialize();
-			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
-			Security theSec = AddSecurity("UAAX", "Update Account Add Xact");
-
-			List<Account> beforeAccountList = ModelService.GetAccounts(false);
-			List<Transaction> beforeXactList = ModelService.GetTransactions();
-
-			// ACT
-			Transaction theXact = new Transaction
-			{
-				Date = DateTime.Now,
-				Type = (int)ModelService.TransactionType.Deposit,
-				Value = 67.89M,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Transactions.Add(theXact);
-			theXact = new Transaction
-			{
-				Date = DateTime.Now,
-				Type = (int)ModelService.TransactionType.Deposit,
-				Value = 2.39M,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Transactions.Add(theXact);
-
-			ModelService.UpdateAccount(theAcct);
-
-			// ASSERT
-			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
-			List<Account> afterAccountList = ModelService.GetAccounts(false);
-			List<Transaction> afterXactList = ModelService.GetTransactions();
-
-			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
-			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
-			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == theXactID[0]);
-			Assert.IsNotNull(actXact0);
-			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact0.Type);
-			Assert.AreEqual(67.89M, actXact0.Value);
-			Assert.AreEqual(theSec.SecurityId, actXact0.SecurityId);
-			Transaction actXact1 = afterXactList.Find(x => x.TransactionId == theXactID[1]);
-			Assert.IsNotNull(actXact1);
-			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact1.Type);
-			Assert.AreEqual(2.39M, actXact1.Value);
-			Assert.AreEqual(theSec.SecurityId, actXact1.SecurityId);
-		}
-
-		[TestMethod]
 		public void UpdateAccount_AddXact2()
 		{
 			// ASSEMBLE
@@ -441,16 +391,14 @@ namespace Couatl3_UnitTest
 				Type = 1,
 				Value = 67.89M
 			};
-			theAcct.Transactions.Add(theXact);
+			ModelService.AddTransaction(theAcct, theXact);
 			theXact = new Transaction
 			{
 				Date = DateTime.Now,
 				Type = 1,
 				Value = 2.39M
 			};
-			theAcct.Transactions.Add(theXact);
-
-			ModelService.UpdateAccount(theAcct);
+			ModelService.AddTransaction(theAcct, theXact);
 
 			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
 			List<Account> AccountListBefore = ModelService.GetAccounts(false);
@@ -468,124 +416,6 @@ namespace Couatl3_UnitTest
 			Assert.IsNull(XactListAfter.Find(x => x.TransactionId == theXactID[0]));
 			Assert.IsNull(XactListAfter.Find(x => x.TransactionId == theXactID[1]));
 		}
-
-		[TestMethod]
-		public void UpdateAccount_AddPosition()
-		{
-			// ASSEMBLE
-			ModelService.Initialize();
-			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
-			Security theSec = AddSecurity("UAAP", "Update Account Add Position");
-
-			List<Account> AccountListBefore = ModelService.GetAccounts(false);
-			List<Position> PositionListBefore = ModelService.GetPositions();
-
-			// ACT
-			Position thePos = new Position
-			{
-				Quantity = 100,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Positions.Add(thePos);
-			ModelService.UpdateAccount(theAcct);
-
-			// ASSERT
-			List<Account> AccountListAfter = ModelService.GetAccounts(false);
-			List<Position> PositionListAfter = ModelService.GetPositions();
-			int[] thePosID = { theAcct.Positions[0].PositionId };
-
-			Assert.AreEqual(AccountListBefore.Count, AccountListAfter.Count);
-			Assert.AreEqual(100, theAcct.Positions[0].Quantity);
-			Assert.AreEqual(theSec.SecurityId, theAcct.Positions[0].SecurityId);
-
-			Assert.AreEqual(PositionListBefore.Count + 1, PositionListAfter.Count);
-			Position actPos = PositionListAfter.Find(x => x.PositionId == thePosID[0]);
-			Assert.AreEqual(100, actPos.Quantity);
-			Assert.AreEqual(theSec.SecurityId, actPos.SecurityId);
-		}
-
-#if false
-		[TestMethod]
-		public void UpdatePosition()
-		{
-			// ASSEMBLE
-			ModelService.Initialize();
-
-			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
-			Security theSec = AddSecurity("UP", "Update Position");
-
-			Position thePos = new Position
-			{
-				Quantity = 100,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Positions.Add(thePos);
-			ModelService.UpdateAccount(theAcct);
-
-			List<Account> beforeAccountList = ModelService.GetAccounts(false);
-			List<Position> beforePositionList = ModelService.GetPositions();
-
-			// ACT
-			Position testPos = theAcct.Positions[0];
-			testPos.Quantity += 123.45M;
-			ModelService.UpdatePosition(testPos);
-
-			// ASSERT
-			List<Account> afterAccountList = ModelService.GetAccounts(false);
-			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
-
-			List<Position> afterPositionList = ModelService.GetPositions();
-			Assert.AreEqual(beforePositionList.Count, afterPositionList.Count);
-
-			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
-			Assert.AreEqual(1, actAcct.Positions.Count);
-			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
-			Assert.AreEqual(thePos.Quantity, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(223.45M, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].SecurityId);
-		}
-
-		[TestMethod]
-		[Ignore]
-		public void UpdatePosition_RemoveLastShares()
-		{
-			// ASSEMBLE
-			ModelService.Initialize();
-
-			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
-			Security theSec = AddSecurity("UPRLS", "Update Position Remove Last Shares");
-
-			Position thePos = new Position
-			{
-				Quantity = 100,
-				SecurityId = theSec.SecurityId,
-			};
-			theAcct.Positions.Add(thePos);
-			ModelService.UpdateAccount(theAcct);
-
-			List<Account> beforeAccountList = ModelService.GetAccounts(false);
-			List<Position> beforePositionList = ModelService.GetPositions();
-
-			// ACT
-			Position testPos = theAcct.Positions[0];
-			testPos.Quantity += 123.45M;
-			ModelService.UpdatePosition(testPos);
-
-			// ASSERT
-			List<Account> afterAccountList = ModelService.GetAccounts(false);
-			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
-
-			List<Position> afterPositionList = ModelService.GetPositions();
-			Assert.AreEqual(beforePositionList.Count, afterPositionList.Count);
-
-			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
-			Assert.AreEqual(1, actAcct.Positions.Count);
-			Assert.AreEqual(thePos.PositionId, actAcct.Positions[0].PositionId);
-			Assert.AreEqual(thePos.Quantity, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(223.45M, actAcct.Positions[0].Quantity);
-			Assert.AreEqual(theSec.SecurityId, actAcct.Positions[0].SecurityId);
-		}
-#endif
 
 		[TestMethod]
 		[Ignore("Might move to delete/add paradigm instead of update")]

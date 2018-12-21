@@ -144,25 +144,6 @@ namespace Couatl3.ViewModels
 			PocSecName = "";
 
 			//TODO: POC for showing transactions
-#if false
-			using (var db = new CouatlContext())
-			{
-				Transaction newXact = new Transaction
-				{
-					Type = 1,
-					Quantity = 123,
-					Value = 6156.95M,
-					Fee = 6.95M,
-					Date = DateTime.Now
-				};
-				newXact.Security = db.Securities.Single(s => s.Symbol == "ACME");
-				Account tgtAccont = db.Accounts.First();
-				tgtAccont.Transactions.Add(newXact);
-				//db.Transactions.Add(newXact);
-
-				db.SaveChanges();
-			}
-#endif
 		}
 	}
 }

@@ -137,6 +137,7 @@ namespace Couatl3.Models
 		}
 		#endregion
 
+		#region Transaction
 		public enum TransactionType
 		{
 			Null = 0,
@@ -168,9 +169,7 @@ namespace Couatl3.Models
 								SecurityId = theXact.SecurityId,
 								Quantity = theXact.Quantity,
 							};
-							// TODO: Refactor this to the new style.
-							theAcct.Positions.Add(thePos);
-							UpdateAccount(theAcct);
+							AddPosition(theAcct, thePos);
 						}
 						else
 						{
@@ -235,6 +234,14 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
+		#endregion
+
+		#region Position
+		static private void AddPosition(Account theAcct, Position thePos)
+		{
+			theAcct.Positions.Add(thePos);
+			UpdateAccount(theAcct);
+		}
 
 		static private void UpdatePosition(Position pos)
 		{
@@ -256,5 +263,6 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
+		#endregion
 	}
 }
