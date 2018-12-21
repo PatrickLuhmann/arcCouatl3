@@ -179,7 +179,6 @@ namespace Couatl3.Models
 						}
 						break;
 				}
-
 			}
 
 			// Give the transaction to its account.
@@ -197,6 +196,33 @@ namespace Couatl3.Models
 			}
 		}
 
+		static public void DeleteTransaction(Transaction theXact)
+		{
+			Account theAcct = theXact.Account;
+
+			// TODO: Data validation here? What to do if there is a problem?
+
+			using (var db = new CouatlContext())
+			{
+				// TODO: Update Positions here if this is a Buy/Sell/StockSplit?
+				switch (theXact.Type)
+				{
+					case (int)TransactionType.Buy:
+						// Find the Position that this Buy affects.
+						Position thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+
+						// Back out the shares that were added.
+						thePos.Quantity -= theXact.Quantity;
+						UpdatePosition(thePos);
+						break;
+				}
+
+				// Delete the transaction from the table.
+				db.Transactions.Remove(theXact);
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Transaction> GetTransactions()
 		{
 			List<Transaction> theList;
@@ -207,17 +233,6 @@ namespace Couatl3.Models
 					.ToList();
 			}
 			return theList;
-		}
-
-		static public void DeleteTransaction(Transaction xact)
-		{
-			Account acct = xact.Account;
-
-			using (var db = new CouatlContext())
-			{
-				db.Transactions.Remove(xact);
-				db.SaveChanges();
-			}
 		}
 
 		static public void UpdatePosition(Position pos)
