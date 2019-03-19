@@ -29,6 +29,21 @@ namespace Couatl3.ViewModels
 			{
 				selectedTransaction = value;
 				RaisePropertyChanged("SelectedTransaction");
+				EditingTransaction = selectedTransaction;
+			}
+		}
+
+		private Transaction_VM editingTransaction;
+		public Transaction_VM EditingTransaction
+		{
+			get
+			{
+				return editingTransaction;
+			}
+			set
+			{
+				editingTransaction = value;
+				RaisePropertyChanged("EditingTransaction");
 			}
 		}
 
@@ -46,9 +61,7 @@ namespace Couatl3.ViewModels
 		{
 			// Create the object and update the database.
 			Transaction t = new Transaction();
-			// TODO: Refactor to use AddTransaction().
-			//TheAccount.Transactions.Add(t);
-			//ModelService.UpdateAccount(TheAccount);
+			ModelService.AddTransaction(TheAccount, t);
 
 			// Create the VM object and update the app/UI.
 			Transaction_VM tvm = new Transaction_VM();
@@ -64,6 +77,7 @@ namespace Couatl3.ViewModels
 			{
 				ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
 				MyTransactions.Remove(SelectedTransaction);
+				// TODO: Move the selection to the next/previous item in the list.
 				SelectedTransaction = null;
 				MyParent.NotifyNumXacts();
 			}
@@ -80,6 +94,7 @@ namespace Couatl3.ViewModels
 				else if (selectedTransaction.Type == ModelService.TransactionType.Deposit ||
 				         selectedTransaction.Type == ModelService.TransactionType.Withdrawal)
 				{
+#if false
 					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
 					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
 					selectedTransaction.TheTransaction.Quantity = 0.0M; // N/A for Deposit/Withdrawal
@@ -87,6 +102,21 @@ namespace Couatl3.ViewModels
 					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
 
 					ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
+#else
+					Transaction newXact = new Transaction();
+					newXact.Type = (int)selectedTransaction.Type;
+					newXact.Date = selectedTransaction.Date;
+					newXact.Quantity = 0.0M; // N/A for Deposit/Withdrawal
+					newXact.Fee = selectedTransaction.Fee;
+					newXact.Value = selectedTransaction.Value;
+
+					// Delete the existing transaction.
+					ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
+					// Add the new transaction.
+					ModelService.AddTransaction(TheAccount, newXact);
+
+					selectedTransaction.TheTransaction = newXact;
+#endif
 				}
 				else if (selectedTransaction.Type == ModelService.TransactionType.Buy)
 				{

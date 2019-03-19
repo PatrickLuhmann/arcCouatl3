@@ -66,7 +66,7 @@
                             <DataGridTextColumn Binding="{Binding CashBalance}" Header="Cash Balance"/>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <ContentControl Content="{Binding SelectedTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
+                    <ContentControl Content="{Binding EditingTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
 
                 </StackPanel>
             </StackPanel>
