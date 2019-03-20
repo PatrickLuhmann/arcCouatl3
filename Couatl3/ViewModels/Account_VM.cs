@@ -29,21 +29,6 @@ namespace Couatl3.ViewModels
 			{
 				selectedTransaction = value;
 				RaisePropertyChanged("SelectedTransaction");
-				EditingTransaction = selectedTransaction;
-			}
-		}
-
-		private Transaction_VM editingTransaction;
-		public Transaction_VM EditingTransaction
-		{
-			get
-			{
-				return editingTransaction;
-			}
-			set
-			{
-				editingTransaction = value;
-				RaisePropertyChanged("EditingTransaction");
 			}
 		}
 
@@ -87,152 +72,23 @@ namespace Couatl3.ViewModels
 		{
 			if (selectedTransaction != null)
 			{
-				if (selectedTransaction.Type == ModelService.TransactionType.Null)
-				{
-					// TODO: Do something here? Or just let it slide?
-				}
-				else if (selectedTransaction.Type == ModelService.TransactionType.Deposit ||
-				         selectedTransaction.Type == ModelService.TransactionType.Withdrawal)
-				{
-#if false
-					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
-					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
-					selectedTransaction.TheTransaction.Quantity = 0.0M; // N/A for Deposit/Withdrawal
-					selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
-					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
+				Transaction newXact = new Transaction();
+				newXact.Type = (int)selectedTransaction.Type;
+				newXact.Date = selectedTransaction.Date;
+				newXact.Quantity = selectedTransaction.Quantity;
+				newXact.Fee = selectedTransaction.Fee;
+				newXact.Value = selectedTransaction.Value;
 
-					ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
-#else
-					Transaction newXact = new Transaction();
-					newXact.Type = (int)selectedTransaction.Type;
-					newXact.Date = selectedTransaction.Date;
-					newXact.Quantity = 0.0M; // N/A for Deposit/Withdrawal
-					newXact.Fee = selectedTransaction.Fee;
-					newXact.Value = selectedTransaction.Value;
+				// Delete the existing transaction.
+				ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
+				// Add the new transaction.
+				ModelService.AddTransaction(TheAccount, newXact);
 
-					// Delete the existing transaction.
-					ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
-					// Add the new transaction.
-					ModelService.AddTransaction(TheAccount, newXact);
+				// NOTE: MyTransactions does not need to be modified, because
+				// we are reusing the same Transaction_VM "bucket".
+				selectedTransaction.TheTransaction = newXact;
 
-					selectedTransaction.TheTransaction = newXact;
-#endif
-				}
-				else if (selectedTransaction.Type == ModelService.TransactionType.Buy)
-				{
-					// TODO: For now, assume Type can't change, because then we would need to roll back what this xact used to do.
-					selectedTransaction.TheTransaction.Type = (int)selectedTransaction.Type;
-
-					// If Security has changed and the original was not null, then back out that Position.
-					Debug.WriteLine("Buy: Symbol was " + ModelService.GetSymbolFromId(selectedTransaction.TheTransaction.SecurityId) + " and is now " + selectedTransaction.Symbol);
-					Security newSec = ModelService.GetSecurities().Find(s => s.Symbol == selectedTransaction.Symbol);
-					if (selectedTransaction.TheTransaction.SecurityId != newSec.SecurityId)
-					{
-						// Set the security in the transaction.
-						selectedTransaction.TheTransaction.SecurityId = newSec.SecurityId;
-
-						// Take away from the old position...
-						Position oldPos = MyPositions.First(p => p.ThePosition.SecurityId == selectedTransaction.TheTransaction.SecurityId).ThePosition;
-						oldPos.Quantity -= selectedTransaction.Quantity;
-						// TODO: Refactor this! ModelService.UpdatePosition(oldPos);
-
-						// ... and give to the new position.
-						Position newPos = MyPositions.FirstOrDefault(p => p.ThePosition.SecurityId == newSec.SecurityId).ThePosition;
-						if (newPos == null)
-						{
-							newPos = new Position();
-							newPos.SecurityId = newSec.SecurityId;
-							newPos.Quantity = selectedTransaction.Quantity;
-							// TODO: Refactor to rely on add/delete xact
-							//TheAccount.Positions.Add(newPos);
-							//ModelService.UpdateAccount(TheAccount);
-						}
-						else
-						{
-							newPos.Quantity += selectedTransaction.Quantity;
-							// TODO: Refactor this! ModelService.UpdatePosition(newPos);
-						}
-					}
-					// Changing from Null, so just add to position.
-					else if (selectedTransaction.TheTransaction.SecurityId <= 0)
-					{
-						// Set the security in the transaction.
-						selectedTransaction.TheTransaction.SecurityId = newSec.SecurityId;
-
-						// TEST CODE
-						selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
-						selectedTransaction.TheTransaction.Quantity = selectedTransaction.Quantity;
-						selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
-						selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
-						ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
-						// END TEST CODE
-
-						// Give to the new position?
-						Position newPos = null;
-						if (MyPositions.Count > 0)
-						{
-							newPos = MyPositions.FirstOrDefault(p => p.ThePosition.SecurityId == newSec.SecurityId)?.ThePosition;
-						}
-						if (newPos == null)
-						{
-							newPos = new Position();
-							newPos.SecurityId = newSec.SecurityId;
-							newPos.Quantity = selectedTransaction.Quantity;
-							// TODO: Refactor to rely on add/delete xact
-							//TheAccount.Positions.Add(newPos);
-							//ModelService.UpdateAccount(TheAccount);
-						}
-						else
-						{
-							newPos.Quantity += selectedTransaction.Quantity;
-							// TODO: Refactor this! ModelService.UpdatePosition(newPos);
-						}
-					}
-					// The Security stays the same, so maybe something else changed.
-					else if (selectedTransaction.TheTransaction.SecurityId == newSec.SecurityId)
-					{
-						// Get the Position for this security.
-						Position existingPos = MyPositions.First(p => p.ThePosition.SecurityId == newSec.SecurityId).ThePosition;
-
-						// Subtract the old Quantity.
-						existingPos.Quantity -= selectedTransaction.TheTransaction.Quantity;
-
-						// Add the new Quantity.
-						existingPos.Quantity += selectedTransaction.Quantity;
-
-						// TODO: Refactor this! ModelService.UpdatePosition(existingPos);
-					}
-					else
-					{
-						// If we get here then there is a corner case I didn't cover.
-						throw new NotImplementedException();
-					}
-
-					// TODO: Why does this line throw exception in case Buy.SameSecurity?
-					//selectedTransaction.TheTransaction.Security = newSec;
-
-					selectedTransaction.TheTransaction.Date = selectedTransaction.Date;
-					selectedTransaction.TheTransaction.Quantity = selectedTransaction.Quantity;
-					selectedTransaction.TheTransaction.Fee = selectedTransaction.Fee;
-					selectedTransaction.TheTransaction.Value = selectedTransaction.Value;
-
-					// TODO: Figure out why this throws an exception when changing the quantity of a Buy transaction.
-					ModelService.UpdateTransaction(selectedTransaction.TheTransaction);
-					// Change Security?
-					// TODO: Assume Security already exists.
-
-					// Change Account.Positions?
-					// Case 1: Brand new position, means existing records not modified; new record added.
-					// Case 2: Existing position, means one existing record will change but not the others.
-					// Case 3: Change security from ABC to XYZ, means existing ABC record will change (or be
-					//         deleted), XYZ record will be changed (if it exists) or added.
-					// Brute force way is to simply delete all existing records and rebuild from scratch.
-
-					// Change Price?
-					// Change Position?
-				}
-
-
+				//TODO: Update the things the ViewModel tracks.
 				CalculateCashBalance();
 			}
 		}
@@ -282,13 +138,13 @@ namespace Couatl3.ViewModels
 			{
 				switch (xact.TheTransaction.Type)
 				{
-					case 1:
-					case 4:
-					case 5:
+					case (int)ModelService.TransactionType.Deposit:
+					case (int)ModelService.TransactionType.Sell:
+					case (int)ModelService.TransactionType.Dividend:
 						balance += xact.TheTransaction.Value;
 						break;
-					case 2:
-					case 3:
+					case (int)ModelService.TransactionType.Withdrawal:
+					case (int)ModelService.TransactionType.Buy:
 						balance -= xact.TheTransaction.Value;
 						break;
 				}

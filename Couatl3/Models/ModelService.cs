@@ -156,11 +156,12 @@ namespace Couatl3.Models
 
 			using (var db = new CouatlContext())
 			{
+				Position thePos;
 				// TODO: Update Positions here if this is a Buy/Sell/StockSplit?
 				switch (theXact.Type)
 				{
 					case (int)TransactionType.Buy:
-						Position thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
 						if (thePos == null)
 						{
 							thePos = new Position
@@ -177,6 +178,25 @@ namespace Couatl3.Models
 							UpdatePosition(thePos);
 						}
 						break;
+					case (int)TransactionType.Sell:
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						if (thePos == null)
+						{
+							// TODO: For now, assume the user meant to show a short sell.
+							thePos = new Position
+							{
+								AccountId = theAcct.AccountId,
+								SecurityId = theXact.SecurityId,
+								Quantity = -1 * theXact.Quantity,
+							};
+							AddPosition(theAcct, thePos);
+						}
+						else
+						{
+							thePos.Quantity -= theXact.Quantity;
+							UpdatePosition(thePos);
+						}
+						break;
 				}
 			}
 
@@ -186,7 +206,7 @@ namespace Couatl3.Models
 		}
 
 		// TODO: Make this private because the user should be doing delete/add; it is too difficult to change Type.
-		static public void UpdateTransaction(Transaction xact)
+		static private void UpdateTransaction(Transaction xact)
 		{
 			using (var db = new CouatlContext())
 			{
@@ -204,20 +224,48 @@ namespace Couatl3.Models
 
 			using (var db = new CouatlContext())
 			{
+				Position thePos;
 				// TODO: Update Positions here if this is a Buy/Sell/StockSplit?
 				switch (theXact.Type)
 				{
 					case (int)TransactionType.Buy:
 						// Find the Position that this Buy affects.
-						Position thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
 
 						// Back out the shares that were added.
 						thePos.Quantity -= theXact.Quantity;
-						UpdatePosition(thePos);
+
+						if (thePos.Quantity == 0)
+							DeletePosition(thePos);
+						else
+							UpdatePosition(thePos);
+						break;
+					case (int)TransactionType.Sell:
+						// Find the Position that this Sell affects.
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+
+						// Add back the shares that were removed.
+						thePos.Quantity += theXact.Quantity;
+
+						// TODO: Revisit the handling of short sells.
+						// It is possible that this Sell transaction was the only one for this position.
+						// In that case then we want to delete the entry in the Position table.
+						if (thePos.Quantity == 0)
+							DeletePosition(thePos);
+						else
+							UpdatePosition(thePos);
 						break;
 				}
+			}
 
-				// Delete the transaction from the table.
+			// Remove the transaction from the Account object.
+			theAcct.Transactions.Remove(theXact);
+
+			// Delete the transaction from the database table.
+			using (var db = new CouatlContext())
+			{
+				// TODO: Figure out if Attach is really needed before Remove; it seems it is not.
+				//db.Transactions.Attach(theXact);
 				db.Transactions.Remove(theXact);
 				db.SaveChanges();
 			}
@@ -234,9 +282,9 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
-		#endregion
+#endregion
 
-		#region Position
+#region Position
 		static private void AddPosition(Account theAcct, Position thePos)
 		{
 			theAcct.Positions.Add(thePos);
@@ -253,6 +301,16 @@ namespace Couatl3.Models
 			}
 		}
 
+		static private void DeletePosition(Position thePos)
+		{
+			using (var db = new CouatlContext())
+			{
+				db.Positions.Attach(thePos);
+				db.Remove(thePos);
+				db.SaveChanges();
+			}
+		}
+
 		static public List<Position> GetPositions()
 		{
 			List<Position> theList;
@@ -263,6 +321,6 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
-		#endregion
+#endregion
 	}
 }
