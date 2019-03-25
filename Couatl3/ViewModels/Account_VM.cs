@@ -60,7 +60,7 @@ namespace Couatl3.ViewModels
 		{
 			if (SelectedTransaction != null)
 			{
-				ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
+				TheAccount = ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
 				MyTransactions.Remove(SelectedTransaction);
 				// TODO: Move the selection to the next/previous item in the list.
 				SelectedTransaction = null;
@@ -78,9 +78,10 @@ namespace Couatl3.ViewModels
 				newXact.Quantity = selectedTransaction.Quantity;
 				newXact.Fee = selectedTransaction.Fee;
 				newXact.Value = selectedTransaction.Value;
+				newXact.SecurityId = selectedTransaction.GetSecurityIdFromComboIndex();
 
 				// Delete the existing transaction.
-				ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
+				TheAccount = ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
 				// Add the new transaction.
 				ModelService.AddTransaction(TheAccount, newXact);
 
@@ -90,6 +91,7 @@ namespace Couatl3.ViewModels
 
 				//TODO: Update the things the ViewModel tracks.
 				CalculateCashBalance();
+				PopulatePositions();
 			}
 		}
 
@@ -105,13 +107,7 @@ namespace Couatl3.ViewModels
 			UpdateTransactionCmd = new RelayCommand(UpdateTransaction);
 
 			// Populate MyPositions.
-			MyPositions = new ObservableCollection<Position_VM>();
-			foreach (var p in TheAccount.Positions)
-			{
-				Position_VM pvm = new Position_VM();
-				pvm.ThePosition = p;
-				MyPositions.Add(pvm);
-			}
+			PopulatePositions();
 
 			// Populate MyTransactions.
 			MyTransactions = new ObservableCollection<Transaction_VM>();
@@ -123,6 +119,17 @@ namespace Couatl3.ViewModels
 			}
 
 			CalculateCashBalance();
+		}
+
+		private void PopulatePositions()
+		{
+			MyPositions = new ObservableCollection<Position_VM>();
+			foreach (var p in TheAccount.Positions)
+			{
+				Position_VM pvm = new Position_VM();
+				pvm.ThePosition = p;
+				MyPositions.Add(pvm);
+			}
 		}
 
 		private void CalculateCashBalance()
@@ -178,9 +185,13 @@ namespace Couatl3.ViewModels
 			{
 				thePosition = value;
 				Value = thePosition.Quantity * ModelService.GetNewestPrice(thePosition.SecurityId);
+				Symbol = ModelService.GetSymbolFromId(ThePosition.SecurityId);
+				Name = Symbol + Symbol;
 			}
 		}
 		public decimal Value { get; set; }
+		public string Symbol { get; set; }
+		public string Name { get; set; }
 	}
 
 	public class ComboBoxXactType
@@ -204,6 +215,7 @@ namespace Couatl3.ViewModels
 				//Symbol = (theTransaction.Security != null) ? theTransaction.Security.Symbol : null;
 				//Symbol = theTransaction.Security ?? theTransaction.Security.Symbol;
 				Symbol = ModelService.GetSymbolFromId(theTransaction.SecurityId);
+				SymbolComboBoxIdx = 3;
 				Quantity = theTransaction.Quantity;
 				Fee = theTransaction.Fee;
 				Value = theTransaction.Value;
@@ -229,8 +241,14 @@ namespace Couatl3.ViewModels
 			}
 		}
 
+		private List<Security> Securities;
+		public int GetSecurityIdFromComboIndex()
+		{
+			return Securities[SymbolComboBoxIdx].SecurityId;
+		}
 		public List<string> SecSymbolList { get; set; }
 		public string Symbol { get; set; }
+		public int SymbolComboBoxIdx { get; set; }
 
 		public decimal Quantity { get; set; }
 
@@ -253,10 +271,13 @@ namespace Couatl3.ViewModels
 			};
 
 			// Get list of symbols for Security ComboBox.
-			List<Security> tempSecs = ModelService.GetSecurities();
+			// TODO: Creating these lists seems like a waste. Why can't there be a "global" source for the securities?
+			Securities = ModelService.GetSecurities();
 			SecSymbolList = new List<string>();
-			foreach (Security sec in tempSecs)
+			System.Diagnostics.Debug.WriteLine("Construct list of security symbols for the Security ComboBox");
+			foreach (Security sec in Securities)
 			{
+				Debug.WriteLine($"[{sec.SecurityId}] {sec.Symbol} - {sec.Name}");
 				SecSymbolList.Add(sec.Symbol);
 			}
 		}

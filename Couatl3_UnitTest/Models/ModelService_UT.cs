@@ -397,9 +397,12 @@ namespace Couatl3_UnitTest
 			List<Transaction> beforeXactList = ModelService.GetTransactions();
 
 			// ACT
-			ModelService.DeleteTransaction(theAcct.Transactions[0]);
+			theAcct = ModelService.DeleteTransaction(theAcct.Transactions[0]);
 
 			// ASSERT
+			Assert.AreEqual(1, theAcct.Transactions.Count);
+			Assert.AreEqual(theXactID[1], theAcct.Transactions[0].TransactionId);
+
 			List<Account> afterAccountList = ModelService.GetAccounts(false);
 			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
 			Assert.AreEqual(1, actAcct.Transactions.Count);
@@ -447,9 +450,12 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			Transaction testXact = ModelService.GetTransactions().Find(t => t.TransactionId == twoXact.TransactionId);
-			ModelService.DeleteTransaction(testXact);
+			theAcct = ModelService.DeleteTransaction(testXact);
 
 			// ASSERT
+			Assert.AreEqual(1, theAcct.Transactions.Count);
+			Assert.AreEqual(oneXact.TransactionId, theAcct.Transactions[0].TransactionId);
+
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count + 1, afterXactList.Count);
 			Assert.IsNull(afterXactList.Find(x => x.TransactionId == twoXact.TransactionId));
@@ -522,18 +528,24 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			Transaction testXact = ModelService.GetTransactions().Find(t => t.TransactionId == one_xact);
-			ModelService.DeleteTransaction(testXact);
+			theAcct = ModelService.DeleteTransaction(testXact);
 			testXact = ModelService.GetTransactions().Find(t => t.TransactionId == two_xact);
-			ModelService.DeleteTransaction(testXact);
+			theAcct = ModelService.DeleteTransaction(testXact);
 
 			// ASSERT
 			// Verify both transactions are gone.
+			// Local.
+			Assert.AreEqual(0, theAcct.Transactions.Count);
+			// Database.
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count - 2, afterXactList.Count);
 			Assert.IsNull(afterXactList.Find(x => x.TransactionId == one_xact));
 			Assert.IsNull(afterXactList.Find(x => x.TransactionId == two_xact));
 
 			// Verify that the position is gone.
+			// Local.
+			Assert.AreEqual(0, theAcct.Positions.Count);
+			// Database.
 			List<Position> afterPositionList = ModelService.GetPositions();
 			Assert.AreEqual(beforePositionList.Count - 1, afterPositionList.Count);
 			Assert.IsNull(afterPositionList.Find(p => p.AccountId == theAcct.AccountId));
@@ -591,9 +603,12 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			// Now delete that sell transaction.
-			ModelService.DeleteTransaction(theXact);
+			theAcct = ModelService.DeleteTransaction(theXact);
 
 			// ASSERT
+			Assert.AreEqual(1, theAcct.Transactions.Count);
+			Assert.AreEqual(b_xact, theAcct.Transactions[0].TransactionId);
+
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count + 1, afterXactList.Count);
 			// Verify the Buy is still there.
@@ -653,9 +668,11 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			// Now delete that sell transaction.
-			ModelService.DeleteTransaction(theXact);
+			theAcct = ModelService.DeleteTransaction(theXact);
 
 			// ASSERT
+			Assert.AreEqual(0, theAcct.Transactions.Count);
+
 			// Verify that the Sell transaction is no longer there.
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count - 1, afterXactList.Count);

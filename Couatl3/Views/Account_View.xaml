@@ -41,8 +41,8 @@
                     <TextBlock>Positions</TextBlock>
                     <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding MyPositions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding ThePosition.Security.Name}" Header="Security"/>
-                            <DataGridTextColumn Binding="{Binding ThePosition.Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding Name}" Header="Security"/>
+                            <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
                             <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
                             <DataGridTextColumn Binding="{Binding Value}" Header="Value"/>
                         </DataGrid.Columns>
@@ -59,7 +59,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Date, StringFormat=yyyy-MM-dd}" Header="Date"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Type, Converter={StaticResource MyTypeConverter}}" Header="Type"/>
-                            <DataGridTextColumn Binding="{Binding TheTransaction.Security.Symbol}" Header="Symbol"/>
+                            <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Quantity}" Header="Quantity"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Value}" Header="Value"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Fee}" Header="Fee"/>

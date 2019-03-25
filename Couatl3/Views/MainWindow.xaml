@@ -47,6 +47,7 @@
                     <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of securities">
                         <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Header="Symbol"/>
                         <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding SecurityId}" Header="ID"/>
                     </GridView>
                 </ListView.View>
             </ListView>

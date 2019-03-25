@@ -115,6 +115,24 @@ namespace Couatl3.Models
 			return sym;
 		}
 
+		static public string GetSecurityNameFromId(int id)
+		{
+			// $$INVALID$$ means id <= 0.
+			// $$NONE$$ means id is not in the db.
+			string name = "$$INVALID$$";
+			if (id > 0)
+				using (var db = new CouatlContext())
+				{
+					List<Security> sec = db.Securities.Where(s => s.SecurityId == id).ToList();
+					if (sec.Count == 1)
+						name = sec[0].Name;
+					else
+						name = "$$NONE$$";
+				}
+
+			return name;
+		}
+
 		static public decimal GetNewestPrice(Security security)
 		{
 			return 0;
@@ -216,9 +234,9 @@ namespace Couatl3.Models
 			}
 		}
 
-		static public void DeleteTransaction(Transaction theXact)
+		static public Account DeleteTransaction(Transaction theXact)
 		{
-			Account theAcct = theXact.Account;
+			int theAcctId = theXact.Account.AccountId;
 
 			// TODO: Data validation here? What to do if there is a problem?
 
@@ -230,7 +248,7 @@ namespace Couatl3.Models
 				{
 					case (int)TransactionType.Buy:
 						// Find the Position that this Buy affects.
-						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcctId && p.SecurityId == theXact.SecurityId);
 
 						// Back out the shares that were added.
 						thePos.Quantity -= theXact.Quantity;
@@ -242,7 +260,7 @@ namespace Couatl3.Models
 						break;
 					case (int)TransactionType.Sell:
 						// Find the Position that this Sell affects.
-						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
+						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcctId && p.SecurityId == theXact.SecurityId);
 
 						// Add back the shares that were removed.
 						thePos.Quantity += theXact.Quantity;
@@ -258,9 +276,6 @@ namespace Couatl3.Models
 				}
 			}
 
-			// Remove the transaction from the Account object.
-			theAcct.Transactions.Remove(theXact);
-
 			// Delete the transaction from the database table.
 			using (var db = new CouatlContext())
 			{
@@ -269,6 +284,20 @@ namespace Couatl3.Models
 				db.Transactions.Remove(theXact);
 				db.SaveChanges();
 			}
+
+			// Get an updated Account object and return it to the caller,
+			// so that they have the freshest version from the database.
+			Account tmpAcct;
+			using (var db = new CouatlContext())
+			{
+				List<Security> secList = db.Securities.ToList();
+				tmpAcct = db.Accounts
+					.Include(a => a.Transactions)
+					.Include(a => a.Positions)
+					.Single(a => a.AccountId == theAcctId);
+			}
+
+			return tmpAcct;
 		}
 
 		static public List<Transaction> GetTransactions()
