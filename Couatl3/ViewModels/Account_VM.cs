@@ -78,7 +78,7 @@ namespace Couatl3.ViewModels
 				newXact.Quantity = selectedTransaction.Quantity;
 				newXact.Fee = selectedTransaction.Fee;
 				newXact.Value = selectedTransaction.Value;
-				newXact.SecurityId = selectedTransaction.GetSecurityIdFromComboIndex();
+				newXact.SecurityId = selectedTransaction.GetSecurityIdFromCombo();
 
 				// Delete the existing transaction.
 				TheAccount = ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
@@ -215,7 +215,7 @@ namespace Couatl3.ViewModels
 				//Symbol = (theTransaction.Security != null) ? theTransaction.Security.Symbol : null;
 				//Symbol = theTransaction.Security ?? theTransaction.Security.Symbol;
 				Symbol = ModelService.GetSymbolFromId(theTransaction.SecurityId);
-				SymbolComboBoxIdx = 3;
+				//SymbolComboBoxIdx = 3;
 				Quantity = theTransaction.Quantity;
 				Fee = theTransaction.Fee;
 				Value = theTransaction.Value;
@@ -242,13 +242,14 @@ namespace Couatl3.ViewModels
 		}
 
 		private List<Security> Securities;
-		public int GetSecurityIdFromComboIndex()
+		public int GetSecurityIdFromCombo()
 		{
-			return Securities[SymbolComboBoxIdx].SecurityId;
+			//return Securities[SymbolComboBoxIdx].SecurityId;
+			return Securities.Find(s => s.Symbol == Symbol).SecurityId;
 		}
 		public List<string> SecSymbolList { get; set; }
 		public string Symbol { get; set; }
-		public int SymbolComboBoxIdx { get; set; }
+		//public int SymbolComboBoxIdx { get; set; }
 
 		public decimal Quantity { get; set; }
 
