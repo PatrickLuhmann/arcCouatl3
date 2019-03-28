@@ -123,13 +123,27 @@ namespace Couatl3.ViewModels
 
 		private void PopulatePositions()
 		{
-			MyPositions = new ObservableCollection<Position_VM>();
+			// First, remove the existing positions. This is easier
+			// than trying to figure out which ones need to change.
+			// Also, simply allocating a new collection object (which
+			// will be empty) doesn't work; the RaisePropertyChanged
+			// doesn't go through for some reason.
+			if (MyPositions != null)
+				while (MyPositions.Count > 0)
+					MyPositions.RemoveAt(0);
+			else
+				MyPositions = new ObservableCollection<Position_VM>();
+
+			// Now put each position in the collection.
 			foreach (var p in TheAccount.Positions)
 			{
 				Position_VM pvm = new Position_VM();
 				pvm.ThePosition = p;
 				MyPositions.Add(pvm);
 			}
+
+			// Tell the View to redraw the table.
+			RaisePropertyChanged("MyPosition");
 		}
 
 		private void CalculateCashBalance()
