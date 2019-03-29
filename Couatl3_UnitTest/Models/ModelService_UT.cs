@@ -117,6 +117,19 @@ namespace Couatl3_UnitTest
 			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
 			Security theSec = AddSecurity("ATBNP", "Add Transaction Buy New Position");
 
+			// Put in an unrelated position.
+			Security preSec = AddSecurity("ATBNP2", "Add Transaction Buy New Position 2");
+			Transaction preXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = preSec.SecurityId,
+				Quantity = 349,
+				Value = 2083.49M,
+				Fee = 21.12M,
+			};
+			ModelService.AddTransaction(theAcct, preXact);
+
 			List<Account> beforeAccountList = ModelService.GetAccounts(false);
 			List<Transaction> beforeXactList = ModelService.GetTransactions();
 			List<Position> beforePositionList = ModelService.GetPositions();
@@ -146,17 +159,17 @@ namespace Couatl3_UnitTest
 
 			List<Position> afterPositionList = ModelService.GetPositions();
 			Assert.AreEqual(beforePositionList.Count + 1, afterPositionList.Count);
-			Position actPos = afterPositionList.Find(p => p.AccountId == theAcct.AccountId);
+			Position actPos = afterPositionList.Find(p => p.AccountId == theAcct.AccountId && p.SecurityId == theSec.SecurityId);
 			Assert.AreEqual(10, actPos.Quantity);
 			Assert.AreEqual(theSec.SecurityId, actPos.SecurityId);
 
 			List<Account> afterAccountList = ModelService.GetAccounts(false);
 			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
 			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
-			Assert.AreEqual(1, actAcct.Transactions.Count);
-			Assert.AreEqual(theXact.TransactionId, actAcct.Transactions[0].TransactionId);
-			Assert.AreEqual(1, actAcct.Positions.Count);
-			Assert.AreEqual(actPos.PositionId, actAcct.Positions[0].PositionId);
+			Assert.AreEqual(2, actAcct.Transactions.Count);
+			Assert.AreEqual(theXact.TransactionId, actAcct.Transactions[1].TransactionId);
+			Assert.AreEqual(2, actAcct.Positions.Count);
+			Assert.AreEqual(actPos.PositionId, actAcct.Positions[1].PositionId);
 		}
 
 		[TestMethod]
@@ -825,6 +838,101 @@ namespace Couatl3_UnitTest
 
 			// ASSERT
 			Assert.AreEqual(expSym, actSym);
+		}
+
+		[TestMethod]
+		public void GetTransaction_Basic()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("ATBEP", "Add Transaction Buy Existing Position");
+
+			// First xact to establish the position.
+			decimal buy_qty = 123;
+			decimal buy_val = 765365.45M;
+			decimal buy_fee = 6.95M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = buy_qty,
+				Value = buy_val,
+				Fee = buy_fee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			int b_xact = theXact.TransactionId;
+
+			// Second xact is to sell some of that position.
+			decimal s_qty = buy_qty / 2;
+			decimal s_val = 365.45M;
+			decimal s_fee = 7.37M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = s_qty,
+				Value = s_val,
+				Fee = s_fee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			int s_xact = theXact.TransactionId;
+
+			// ACT
+			// We have no idea how many items are in this list, because the test
+			// database could have been in existence for multiple runs.
+			List<Transaction> testXacts = ModelService.GetTransactions();
+
+			// ASSERT
+			Assert.IsTrue(testXacts.Count >= 2);
+
+			Transaction actXact = testXacts.Find(t => t.TransactionId == b_xact);
+			Assert.IsNotNull(actXact);
+			Assert.AreEqual((int)ModelService.TransactionType.Buy, actXact.Type);
+			Assert.AreEqual(theSec.SecurityId, actXact.SecurityId);
+			Assert.AreEqual(buy_qty, actXact.Quantity);
+			Assert.AreEqual(buy_val, actXact.Value);
+			Assert.AreEqual(buy_fee, actXact.Fee);
+			Assert.AreEqual(theAcct.AccountId, actXact.AccountId);
+			Assert.AreEqual(theAcct.AccountId, actXact.Account.AccountId);
+			Assert.IsNotNull(actXact.Account);
+			Assert.IsNotNull(actXact.Account.Positions);
+			Assert.AreEqual(1, actXact.Account.Positions.Count);
+			Assert.AreEqual(theSec.SecurityId, actXact.Account.Positions[0].SecurityId);
+
+			actXact = testXacts.Find(t => t.TransactionId == s_xact);
+			Assert.IsNotNull(actXact);
+			Assert.AreEqual((int)ModelService.TransactionType.Sell, actXact.Type);
+			Assert.AreEqual(theSec.SecurityId, actXact.SecurityId);
+			Assert.AreEqual(s_qty, actXact.Quantity);
+			Assert.AreEqual(s_val, actXact.Value);
+			Assert.AreEqual(s_fee, actXact.Fee);
+			Assert.AreEqual(theAcct.AccountId, actXact.AccountId);
+			Assert.AreEqual(theAcct.AccountId, actXact.Account.AccountId);
+			Assert.IsNotNull(actXact.Account);
+			Assert.IsNotNull(actXact.Account.Positions);
+			Assert.AreEqual(1, actXact.Account.Positions.Count);
+			Assert.AreEqual(theSec.SecurityId, actXact.Account.Positions[0].SecurityId);
+
+			// Check that the Account within the Transaction has its Positions list filled out correctly.
+			List<Position> allPositions = ModelService.GetPositions();
+			foreach (Position pos in allPositions)
+			{
+				// Get the Account for this position.
+				int tgtAcctId = pos.AccountId;
+
+				// Check all Transactions for this Account.
+				foreach (Transaction xact in testXacts)
+				{
+					if (xact.AccountId == tgtAcctId)
+					{
+						Assert.IsNotNull(xact.Account.Positions);
+						Assert.IsTrue(xact.Account.Positions.Count > 0);
+					}
+				}
+			}
 		}
 
 		[TestMethod]

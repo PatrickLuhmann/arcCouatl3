@@ -306,7 +306,7 @@ namespace Couatl3.Models
 			using (var db = new CouatlContext())
 			{
 				theList = db.Transactions
-					.Include(t => t.Account)
+					.Include(t => t.Account).ThenInclude(a => a.Positions)
 					.ToList();
 			}
 			return theList;
