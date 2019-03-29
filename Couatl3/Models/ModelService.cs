@@ -156,6 +156,9 @@ namespace Couatl3.Models
 		#endregion
 
 		#region Transaction
+		// TODO: How to handle a transfer in/out of a security?
+		// I don't like the idea of overloading Deposit. So either have a
+		// SecurityIn/Out pair, or move to DepositCash/DepositSecurity.
 		public enum TransactionType
 		{
 			Null = 0,

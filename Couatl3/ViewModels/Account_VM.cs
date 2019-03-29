@@ -72,6 +72,8 @@ namespace Couatl3.ViewModels
 		{
 			if (selectedTransaction != null)
 			{
+				// TODO: Validate fields by Type?
+				// EX: There is no reason to have a Quantity or SecurityId for a Buy transaction.
 				Transaction newXact = new Transaction();
 				newXact.Type = (int)selectedTransaction.Type;
 				newXact.Date = selectedTransaction.Date;
@@ -79,6 +81,17 @@ namespace Couatl3.ViewModels
 				newXact.Fee = selectedTransaction.Fee;
 				newXact.Value = selectedTransaction.Value;
 				newXact.SecurityId = selectedTransaction.GetSecurityIdFromCombo();
+
+				switch (selectedTransaction.Type)
+				{
+					case ModelService.TransactionType.Deposit:
+					case ModelService.TransactionType.Withdrawal:
+						// No security.
+						newXact.SecurityId = -1;
+						// No Quantity.
+						newXact.Quantity = 0;
+						break;
+				}
 
 				// Delete the existing transaction.
 				TheAccount = ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
@@ -226,10 +239,9 @@ namespace Couatl3.ViewModels
 
 				Date = theTransaction.Date;
 				type = (ModelService.TransactionType)theTransaction.Type;
-				//Symbol = (theTransaction.Security != null) ? theTransaction.Security.Symbol : null;
-				//Symbol = theTransaction.Security ?? theTransaction.Security.Symbol;
 				Symbol = ModelService.GetSymbolFromId(theTransaction.SecurityId);
-				//SymbolComboBoxIdx = 3;
+				if (Symbol == "$$INVALID$$")
+					Symbol = "";
 				Quantity = theTransaction.Quantity;
 				Fee = theTransaction.Fee;
 				Value = theTransaction.Value;
@@ -259,7 +271,11 @@ namespace Couatl3.ViewModels
 		public int GetSecurityIdFromCombo()
 		{
 			//return Securities[SymbolComboBoxIdx].SecurityId;
-			return Securities.Find(s => s.Symbol == Symbol).SecurityId;
+			Security sec = Securities.Find(s => s.Symbol == Symbol);
+			if (sec != null)
+				return sec.SecurityId;
+			else
+				return -1;
 		}
 		public List<string> SecSymbolList { get; set; }
 		public string Symbol { get; set; }
@@ -290,6 +306,7 @@ namespace Couatl3.ViewModels
 			Securities = ModelService.GetSecurities();
 			SecSymbolList = new List<string>();
 			System.Diagnostics.Debug.WriteLine("Construct list of security symbols for the Security ComboBox");
+			SecSymbolList.Add("");
 			foreach (Security sec in Securities)
 			{
 				Debug.WriteLine($"[{sec.SecurityId}] {sec.Symbol} - {sec.Name}");
