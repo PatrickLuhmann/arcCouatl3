@@ -38,8 +38,11 @@ namespace Couatl3.ViewModels
 			}
 			set
 			{
+				// NOTE: this can be called with a null value,
+				// such as during accounts.Clear().
 				selectedAccount = value;
-				selectedAccount.SelectedTransaction = null;
+				if (selectedAccount != null)
+					selectedAccount.SelectedTransaction = null;
 				RaisePropertyChanged("SelectedAccount");
 			}
 		}
