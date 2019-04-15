@@ -77,7 +77,7 @@ namespace Couatl3.ViewModels
 				Transaction newXact = new Transaction();
 				newXact.Type = (int)selectedTransaction.Type;
 				newXact.Date = selectedTransaction.Date;
-				newXact.Quantity = selectedTransaction.Quantity;
+				newXact.Quantity = selectedTransaction.Quantity ?? 0;
 				newXact.Fee = selectedTransaction.Fee;
 				newXact.Value = selectedTransaction.Value;
 				newXact.SecurityId = selectedTransaction.GetSecurityIdFromCombo();
@@ -100,7 +100,7 @@ namespace Couatl3.ViewModels
 
 				// NOTE: MyTransactions does not need to be modified, because
 				// we are reusing the same Transaction_VM "bucket".
-				selectedTransaction.TheTransaction = newXact;
+				SelectedTransaction.TheTransaction = newXact;
 
 				//TODO: Update the things the ViewModel tracks.
 				CalculateCashBalance();
@@ -242,9 +242,24 @@ namespace Couatl3.ViewModels
 				Symbol = ModelService.GetSymbolFromId(theTransaction.SecurityId);
 				if (Symbol == "$$INVALID$$")
 					Symbol = "";
-				Quantity = theTransaction.Quantity;
+				// Not all transaction types have a meaningful Quantity.
+				switch (type)
+				{
+					case ModelService.TransactionType.Buy:
+					case ModelService.TransactionType.Sell:
+					case ModelService.TransactionType.StockSplit:
+						Quantity = theTransaction.Quantity;
+						break;
+					case ModelService.TransactionType.Deposit:
+					case ModelService.TransactionType.Withdrawal:
+					case ModelService.TransactionType.Dividend:
+					default:
+						Quantity = null;
+						break;
+				}
 				Fee = theTransaction.Fee;
 				Value = theTransaction.Value;
+
 			}
 		}
 
@@ -278,10 +293,35 @@ namespace Couatl3.ViewModels
 				return -1;
 		}
 		public List<string> SecSymbolList { get; set; }
-		public string Symbol { get; set; }
+
+		private string symbol;
+		public string Symbol
+		{
+			get
+			{
+				return symbol;
+			}
+			set
+			{
+				symbol = value;
+				RaisePropertyChanged("Symbol");
+			}
+		}
 		//public int SymbolComboBoxIdx { get; set; }
 
-		public decimal Quantity { get; set; }
+		private decimal? quantity;
+		public decimal? Quantity
+		{
+			get
+			{
+				return quantity;
+			}
+			set
+			{
+				quantity = value;
+				RaisePropertyChanged("Quantity");
+			}
+		}
 
 		public decimal Fee { get; set; }
 
@@ -291,6 +331,7 @@ namespace Couatl3.ViewModels
 
 		public Transaction_VM()
 		{
+			// TODO: Is this really the right place for this?
 			XactTypeList = new List<ComboBoxXactType>()
 			{
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Deposit, XactTypeString = "Deposit"},

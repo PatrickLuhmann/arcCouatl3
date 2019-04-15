@@ -60,7 +60,7 @@
                             <DataGridTextColumn Binding="{Binding TheTransaction.Date, StringFormat=yyyy-MM-dd}" Header="Date"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Type, Converter={StaticResource MyTypeConverter}}" Header="Type"/>
                             <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
-                            <DataGridTextColumn Binding="{Binding TheTransaction.Quantity}" Header="Quantity"/>
+                            <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Value}" Header="Value"/>
                             <DataGridTextColumn Binding="{Binding TheTransaction.Fee}" Header="Fee"/>
                             <DataGridTextColumn Binding="{Binding CashBalance}" Header="Cash Balance"/>
