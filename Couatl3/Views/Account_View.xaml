@@ -44,7 +44,7 @@
                             <DataGridTextColumn Binding="{Binding Name}" Header="Security"/>
                             <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
                             <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
-                            <DataGridTextColumn Binding="{Binding Value}" Header="Value"/>
+                            <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
@@ -61,9 +61,9 @@
                             <DataGridTextColumn Binding="{Binding TheTransaction.Type, Converter={StaticResource MyTypeConverter}}" Header="Type"/>
                             <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
                             <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
-                            <DataGridTextColumn Binding="{Binding TheTransaction.Value}" Header="Value"/>
-                            <DataGridTextColumn Binding="{Binding TheTransaction.Fee}" Header="Fee"/>
-                            <DataGridTextColumn Binding="{Binding CashBalance}" Header="Cash Balance"/>
+                            <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
+                            <DataGridTextColumn Binding="{Binding Fee, StringFormat=C2}" Header="Fee"/>
+                            <DataGridTextColumn Binding="{Binding CashBalance, StringFormat=C2}" Header="Cash Balance"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <ContentControl Content="{Binding SelectedTransaction}" ContentTemplate="{StaticResource EditXactTemplate}"/>
