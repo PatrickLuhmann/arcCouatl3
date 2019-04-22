@@ -168,12 +168,16 @@ namespace Couatl3.Models
 			Sell,
 			Dividend,
 			StockSplit,
+			HOLD_TransferIn,
+			HOLD_TransferOut,
+			Fee,
 			Invalid
 		}
 
 		public static void AddTransaction(Account theAcct, Transaction theXact)
 		{
 			// TODO: Data validation here? What to do if there is a problem?
+			// TODO: Or, create a new Transaction object based on the input, and have the xtor do the data validation.
 
 			using (var db = new CouatlContext())
 			{
@@ -217,6 +221,12 @@ namespace Couatl3.Models
 							thePos.Quantity -= theXact.Quantity;
 							UpdatePosition(thePos);
 						}
+						break;
+					case (int)TransactionType.Fee:
+						// Set the invalid fields for this type to default values.
+						theXact.Quantity = 0;
+						theXact.SecurityId = -1;
+						theXact.Fee = 0; // It doesn't make sense to have a fee on a fee.
 						break;
 				}
 			}

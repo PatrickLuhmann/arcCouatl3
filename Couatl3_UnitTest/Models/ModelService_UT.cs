@@ -382,6 +382,77 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void AddTransaction_Fee()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+
+			List<Account> beforeAccountList = ModelService.GetAccounts(false);
+			List<Transaction> beforeXactList = ModelService.GetTransactions();
+			List<Position> beforePositionList = ModelService.GetPositions();
+
+			// ACT
+			int sec = -1;
+			decimal qty = 0.0M;
+			decimal depVal = 2425.48M;
+			decimal fee = 0.0M;
+			Transaction depXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Deposit,
+				SecurityId = sec,
+				Quantity = qty,
+				Value = depVal,
+				Fee = fee,
+			};
+			ModelService.AddTransaction(theAcct, depXact);
+
+			decimal feeVal = 19.95M;
+			Transaction feeXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Fee,
+				SecurityId = 506, // INVALID
+				Quantity = 8.44M, // INVALID
+				Value = feeVal,
+				Fee = 878, // INVALID
+			};
+			ModelService.AddTransaction(theAcct, feeXact);
+
+			// ASSERT
+			// Check the (global) Transaction table.
+			List<Transaction> afterXactList = ModelService.GetTransactions();
+			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
+			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == depXact.TransactionId);
+			Assert.IsNotNull(actXact0);
+			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact0.Type);
+			Assert.AreEqual(qty, actXact0.Quantity);
+			Assert.AreEqual(depVal, actXact0.Value);
+			Assert.AreEqual(fee, actXact0.Fee);
+			Assert.AreEqual(sec, actXact0.SecurityId);
+			actXact0 = afterXactList.Find(x => x.TransactionId == feeXact.TransactionId);
+			Assert.IsNotNull(actXact0);
+			Assert.AreEqual((int)ModelService.TransactionType.Fee, actXact0.Type);
+			Assert.AreEqual(0, actXact0.Quantity);
+			Assert.AreEqual(feeVal, actXact0.Value);
+			Assert.AreEqual(0, actXact0.Fee);
+			Assert.AreEqual(-1, actXact0.SecurityId);
+
+			// No change to Positions for this transaction type.
+			List<Position> afterPositionList = ModelService.GetPositions();
+			Assert.AreEqual(beforePositionList.Count, afterPositionList.Count);
+
+			// Check the Transactions list in the Account.
+			List<Account> afterAccountList = ModelService.GetAccounts(false);
+			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
+			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(2, actAcct.Transactions.Count);
+			Assert.AreEqual(depXact.TransactionId, actAcct.Transactions[0].TransactionId);
+			Assert.AreEqual(feeXact.TransactionId, actAcct.Transactions[1].TransactionId);
+		}
+
+		[TestMethod]
 		public void DeleteTransaction()
 		{
 			// ASSEMBLE
