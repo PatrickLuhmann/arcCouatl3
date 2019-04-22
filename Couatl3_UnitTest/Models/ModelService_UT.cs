@@ -62,7 +62,7 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
-		public void UpdateAccount_AddXact2()
+		public void AddTransaction_Deposit()
 		{
 			// ASSEMBLE
 			ModelService.Initialize();
@@ -78,35 +78,22 @@ namespace Couatl3_UnitTest
 				Date = DateTime.Now,
 				Type = (int)ModelService.TransactionType.Deposit,
 				Value = 67.89M,
-				SecurityId = theSec.SecurityId,
-			};
-			ModelService.AddTransaction(theAcct, theXact);
-			theXact = new Transaction
-			{
-				Date = DateTime.Now,
-				Type = (int)ModelService.TransactionType.Deposit,
-				Value = 2.39M,
-				SecurityId = theSec.SecurityId,
+				SecurityId = theSec.SecurityId, // INVALID - will be ignored.
 			};
 			ModelService.AddTransaction(theAcct, theXact);
 
 			// ASSERT
-			int[] theXactID = { theAcct.Transactions[0].TransactionId, theAcct.Transactions[1].TransactionId };
+			int theXactID = theAcct.Transactions[0].TransactionId;
 			List<Account> afterAccountList = ModelService.GetAccounts(false);
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 
 			Assert.AreEqual(beforeAccountList.Count, afterAccountList.Count);
-			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
-			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == theXactID[0]);
+			Assert.AreEqual(beforeXactList.Count + 1, afterXactList.Count);
+			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == theXactID);
 			Assert.IsNotNull(actXact0);
 			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact0.Type);
 			Assert.AreEqual(67.89M, actXact0.Value);
-			Assert.AreEqual(theSec.SecurityId, actXact0.SecurityId);
-			Transaction actXact1 = afterXactList.Find(x => x.TransactionId == theXactID[1]);
-			Assert.IsNotNull(actXact1);
-			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact1.Type);
-			Assert.AreEqual(2.39M, actXact1.Value);
-			Assert.AreEqual(theSec.SecurityId, actXact1.SecurityId);
+			Assert.AreEqual(-1, actXact0.SecurityId);
 		}
 
 		[TestMethod]
@@ -317,16 +304,16 @@ namespace Couatl3_UnitTest
 			List<Position> beforePositionList = ModelService.GetPositions();
 
 			// ACT
-			int sec = -1;
-			decimal qty = 0.0M;
+			int sec = 1234;
+			decimal qty = 2.21M;
 			decimal depVal = 2425.48M;
 			decimal fee = 0.0M;
 			Transaction depXact = new Transaction
 			{
 				Date = DateTime.Now,
 				Type = (int)ModelService.TransactionType.Deposit,
-				SecurityId = sec,
-				Quantity = qty,
+				SecurityId = sec, // INVALID - will be ignored.
+				Quantity = qty, // INVALID - will be ignored.
 				Value = depVal,
 				Fee = fee,
 			};
@@ -337,8 +324,8 @@ namespace Couatl3_UnitTest
 			{
 				Date = DateTime.Now,
 				Type = (int)ModelService.TransactionType.Withdrawal,
-				SecurityId = sec,
-				Quantity = qty,
+				SecurityId = sec, // INVALID - will be ignored.
+				Quantity = qty, // INVALID - will be ignored.
 				Value = withVal,
 				Fee = fee,
 			};
@@ -351,17 +338,17 @@ namespace Couatl3_UnitTest
 			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == depXact.TransactionId);
 			Assert.IsNotNull(actXact0);
 			Assert.AreEqual((int)ModelService.TransactionType.Deposit, actXact0.Type);
-			Assert.AreEqual(qty, actXact0.Quantity);
+			Assert.AreEqual(0, actXact0.Quantity);
 			Assert.AreEqual(depVal, actXact0.Value);
 			Assert.AreEqual(fee, actXact0.Fee);
-			Assert.AreEqual(sec, actXact0.SecurityId);
+			Assert.AreEqual(-1, actXact0.SecurityId);
 			actXact0 = afterXactList.Find(x => x.TransactionId == withXact.TransactionId);
 			Assert.IsNotNull(actXact0);
 			Assert.AreEqual((int)ModelService.TransactionType.Withdrawal, actXact0.Type);
-			Assert.AreEqual(qty, actXact0.Quantity);
+			Assert.AreEqual(0, actXact0.Quantity);
 			Assert.AreEqual(withVal, actXact0.Value);
 			Assert.AreEqual(fee, actXact0.Fee);
-			Assert.AreEqual(sec, actXact0.SecurityId);
+			Assert.AreEqual(-1, actXact0.SecurityId);
 
 			// No change to Positions for this transaction type.
 			List<Position> afterPositionList = ModelService.GetPositions();

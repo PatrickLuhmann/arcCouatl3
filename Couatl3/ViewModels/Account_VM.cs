@@ -82,17 +82,6 @@ namespace Couatl3.ViewModels
 				newXact.Value = selectedTransaction.Value;
 				newXact.SecurityId = selectedTransaction.GetSecurityIdFromCombo();
 
-				switch (selectedTransaction.Type)
-				{
-					case ModelService.TransactionType.Deposit:
-					case ModelService.TransactionType.Withdrawal:
-						// No security.
-						newXact.SecurityId = -1;
-						// No Quantity.
-						newXact.Quantity = 0;
-						break;
-				}
-
 				// Delete the existing transaction.
 				TheAccount = ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
 				// Add the new transaction.

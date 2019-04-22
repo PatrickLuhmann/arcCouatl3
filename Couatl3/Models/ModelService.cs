@@ -222,6 +222,12 @@ namespace Couatl3.Models
 							UpdatePosition(thePos);
 						}
 						break;
+					case (int)TransactionType.Deposit:
+					case (int)TransactionType.Withdrawal:
+						// Set the invalid fields for this type to default values.
+						theXact.Quantity = 0;
+						theXact.SecurityId = -1;
+						break;
 					case (int)TransactionType.Fee:
 						// Set the invalid fields for this type to default values.
 						theXact.Quantity = 0;
