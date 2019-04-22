@@ -179,6 +179,7 @@ namespace Couatl3.ViewModels
 						break;
 					case (int)ModelService.TransactionType.Withdrawal:
 					case (int)ModelService.TransactionType.Buy:
+					case (int)ModelService.TransactionType.Fee:
 						balance -= xact.TheTransaction.Value;
 						break;
 				}
@@ -340,6 +341,7 @@ namespace Couatl3.ViewModels
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Sell, XactTypeString = "Sell"},
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Dividend, XactTypeString = "Dividend "},
 				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.StockSplit, XactTypeString = "Stock Split"},
+				new ComboBoxXactType() {XactEnum = ModelService.TransactionType.Fee, XactTypeString = "Fee"},
 			};
 
 			// Get list of symbols for Security ComboBox.
@@ -375,6 +377,12 @@ namespace Couatl3.ViewModels
 					return "Dividend";
 				case 6:
 					return "Stock Split";
+				case 7:
+					return "NOT IMPLEMENTED";
+				case 8:
+					return "NOT IMPLEMENTED";
+				case 9:
+					return "Fee";
 				default:
 					return "Unknown";
 			}
