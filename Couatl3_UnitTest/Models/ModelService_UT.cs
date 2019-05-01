@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Couatl3_UnitTest
 {
@@ -994,14 +995,240 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
-		[Ignore]
-		public void Test_GetNewestPrice()
+		public void AddPriceGetPrices_Basic()
 		{
 			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APGPB", "Add Price Get Prices Basic");
+			List<Price> beforePriceList = ModelService.GetPrices();
 
 			// ACT
+			DateTime theDate = DateTime.Now;
+			decimal theAmount = 4.07M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
 
 			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count + 1, afterPriceList.Count);
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(theDate, actPrice.Date);
+			Assert.AreEqual(theAmount, actPrice.Amount);
+			Assert.AreEqual(theClosing, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void AddPrice_UseBuyXact()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APUBX", "Add Price Use Buy Xact");
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			DateTime buy_date = DateTime.Now;
+			decimal buy_qty = 123;
+			decimal buy_price = 100;
+			decimal buy_val = buy_qty * buy_price;
+			decimal buy_fee = 0;
+			Transaction theXact = new Transaction
+			{
+				Date = buy_date,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = buy_qty,
+				Value = buy_val,
+				Fee = buy_fee,
+			};
+			// Don't call ModelService.AddTransaction() because that would call AddPrice.
+
+			// ACT
+			ModelService.AddPrice(theXact);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count + 1, afterPriceList.Count);
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(buy_date, actPrice.Date);
+			Assert.AreEqual(buy_price, actPrice.Amount);
+			// Prices from transactions are always not closing prices.
+			Assert.AreEqual(false, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void AddPrice_UseSellXact()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APUSX", "Add Price Use Sell Xact");
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			DateTime buy_date = DateTime.Now;
+			decimal buy_qty = 456;
+			decimal buy_price = 21.12M;
+			decimal buy_val = buy_qty * buy_price;
+			decimal buy_fee = 0;
+			Transaction theXact = new Transaction
+			{
+				Date = buy_date,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = buy_qty,
+				Value = buy_val,
+				Fee = buy_fee,
+			};
+			// Don't call ModelService.AddTransaction() because that would call AddPrice.
+
+			// ACT
+			ModelService.AddPrice(theXact);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count + 1, afterPriceList.Count);
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(buy_date, actPrice.Date);
+			Assert.AreEqual(buy_price, actPrice.Amount);
+			// Prices from transactions are always not closing prices.
+			Assert.AreEqual(false, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void GetNewestPriceNoBuyXact_Basic()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPNBX", "Get Newest Price No Buy Xact");
+
+			DateTime theDate = DateTime.Now;
+			decimal theAmount = 4.37M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ACT
+			decimal actPrice = ModelService.GetNewestPrice(theSec);
+
+			// ASSERT
+			Assert.AreEqual(theAmount, actPrice);
+		}
+
+		[TestMethod]
+		public void GetNewestPriceNoBuyXact_OneSecMultiplePrices()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPNBX", "Get Newest Price No Buy Xact One Many");
+
+			DateTime theDate = DateTime.Now;
+			decimal theAmount = 4.37M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// Not the newest, so don't use the variables.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("1/1/2019"), 11.17M, true);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("12/31/1999"), 5.26M, true);
+
+			// ACT
+			decimal actAmount = ModelService.GetNewestPrice(theSec);
+
+			// ASSERT
+			Assert.AreEqual(theAmount, actAmount);
+		}
+
+		[TestMethod]
+		public void GetNewestPriceNoBuyXact_MultipleSecMultiplePrices()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPNBXMSMP", "Get Newest Price No Buy Xact Many Many");
+			Security otherSec = AddSecurity("OTHR", "Other security");
+
+			ModelService.AddPrice(otherSec.SecurityId, DateTime.Parse("2/19/2013"), 5.58M, true);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("1/1/2019"), 11.17M, true);
+
+			// Save the amount for the newest price.
+			decimal theAmount = 4.18M;
+			// Only use DateTime.Now for this one, and set all others to an earlier date.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Now, theAmount, true);
+
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("12/31/1999"), 5.26M, false);
+			ModelService.AddPrice(otherSec.SecurityId, DateTime.Parse("3/29/1983"), 6.21M, false);
+
+			// ACT
+			decimal actAmount = ModelService.GetNewestPrice(theSec);
+
+			// ASSERT
+			Assert.AreEqual(theAmount, actAmount);
+		}
+
+		[TestMethod]
+		public void GetNewestPriceBuyXactZeroFee()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPBXZF", "Get Newest Price Buy Xact Zero Fee");
+
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/7/2002"), 5.29M, false);
+
+			decimal theQty = 6;
+			decimal thePrice = 3.50M;
+			decimal theFee = 0;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice + theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("6/2/1928"), 7.23M, false);
+
+			// ACT
+			decimal actPrice = ModelService.GetNewestPrice(theSec);
+
+			// ASSERT
+			Assert.AreEqual(thePrice, actPrice);
+		}
+
+		[TestMethod]
+		public void GetNewestPriceSellXactZeroFee()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPSXZF", "Get Newest Price Sell Xact Zero Fee");
+
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("5/25/1976"), 5.29M, false);
+
+			decimal theQty = 6;
+			decimal thePrice = 3.50M;
+			decimal theFee = 0;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Now,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice + theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("7/13/2000"), 7.23M, false);
+
+			// ACT
+			decimal actPrice = ModelService.GetNewestPrice(theSec);
+
+			// ASSERT
+			Assert.AreEqual(thePrice, actPrice);
 		}
 
 		#region Helper Functions

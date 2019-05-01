@@ -133,9 +133,62 @@ namespace Couatl3.Models
 			return name;
 		}
 
+		/// <summary>
+		/// Returns all of the Price records in the database.
+		/// </summary>
+		/// <returns>List<Price> containing all Prices in the database.</Price></returns>
+		static public List<Price> GetPrices()
+		{
+			List<Price> prices;
+			using (var db = new CouatlContext())
+			{
+				prices = db.Prices.ToList();
+			}
+			return prices;
+		}
+
+		static public void AddPrice(int securityId, DateTime date, decimal amount, bool closing)
+		{
+			Price thePrice = new Price();
+			thePrice.Amount = amount;
+			thePrice.Date = date;
+			thePrice.Closing = closing;
+			thePrice.SecurityId = securityId;
+
+			using (var db = new CouatlContext())
+			{
+				db.Prices.Add(thePrice);
+				db.SaveChanges();
+			}
+		}
+
+		static public void AddPrice(Transaction xact)
+		{
+			decimal theAmount = (xact.Value - xact.Fee) / xact.Quantity;
+
+			// Prices from transactions are by definition not closing prices.
+			// TODO: This is not the case for mutual funds, right? Take this into account?
+			AddPrice(xact.SecurityId, xact.Date, theAmount, false);
+		}
+
 		static public decimal GetNewestPrice(Security security)
 		{
-			return 0;
+			decimal price = 0;
+			List<Price> Prices;
+
+			// Get the prices for the security.
+			using (var db = new CouatlContext())
+			{
+				Prices = db.Prices.Where(p => p.SecurityId == security.SecurityId).ToList();
+			}
+
+			// Sort by date.
+			Prices.Sort((x, y) => DateTime.Compare(x.Date, y.Date));
+
+			// Grab the price value of the list item in the list.
+			price = Prices.Last().Amount;
+
+			return price;
 		}
 
 		static public decimal GetNewestPrice(int id)
@@ -202,6 +255,9 @@ namespace Couatl3.Models
 							thePos.Quantity += theXact.Quantity;
 							UpdatePosition(thePos);
 						}
+
+						ModelService.AddPrice(theXact);
+
 						break;
 					case (int)TransactionType.Sell:
 						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
@@ -221,6 +277,9 @@ namespace Couatl3.Models
 							thePos.Quantity -= theXact.Quantity;
 							UpdatePosition(thePos);
 						}
+
+						ModelService.AddPrice(theXact);
+
 						break;
 					case (int)TransactionType.Deposit:
 					case (int)TransactionType.Withdrawal:
