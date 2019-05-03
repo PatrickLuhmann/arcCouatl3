@@ -1053,8 +1053,8 @@ namespace Couatl3_UnitTest
 			DateTime buy_date = DateTime.Now;
 			decimal buy_qty = 123;
 			decimal buy_price = 100;
-			decimal buy_val = buy_qty * buy_price;
-			decimal buy_fee = 0;
+			decimal buy_fee = 3.06M;
+			decimal buy_val = buy_qty * buy_price + buy_fee;
 			Transaction theXact = new Transaction
 			{
 				Date = buy_date,
@@ -1091,8 +1091,9 @@ namespace Couatl3_UnitTest
 			DateTime buy_date = DateTime.Now;
 			decimal buy_qty = 456;
 			decimal buy_price = 21.12M;
-			decimal buy_val = buy_qty * buy_price;
-			decimal buy_fee = 0;
+			decimal buy_fee = 6.95M;
+			// The investor gets the total value of the shares minus the fees.
+			decimal buy_val = buy_qty * buy_price - buy_fee;
 			Transaction theXact = new Transaction
 			{
 				Date = buy_date,

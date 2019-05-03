@@ -165,7 +165,15 @@ namespace Couatl3.Models
 
 		static public void AddPrice(Transaction xact)
 		{
-			decimal theAmount = (xact.Value - xact.Fee) / xact.Quantity;
+			// For a Buy, the Fee is subtracted from the Value to get the security's price.
+			// For a Sell, the fee is added to the Value to get the security's price.
+			decimal theAmount;
+			if (xact.Type == (int)ModelService.TransactionType.Buy)
+				theAmount = (xact.Value - xact.Fee) / xact.Quantity;
+			else if (xact.Type == (int)ModelService.TransactionType.Sell)
+				theAmount = (xact.Value + xact.Fee) / xact.Quantity;
+			else
+				throw new ArgumentException();
 
 			// Prices from transactions are by definition not closing prices.
 			// TODO: This is not the case for mutual funds, right? Take this into account?
