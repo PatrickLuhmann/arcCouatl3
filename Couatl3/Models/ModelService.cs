@@ -149,6 +149,7 @@ namespace Couatl3.Models
 
 		static public void AddPrice(int securityId, DateTime date, decimal amount, bool closing)
 		{
+			// TODO: Should AddPrice make sure there is only one price per date?
 			Price thePrice = new Price();
 			thePrice.Amount = amount;
 			thePrice.Date = date;
@@ -173,27 +174,41 @@ namespace Couatl3.Models
 
 		static public decimal GetNewestPrice(Security security)
 		{
-			decimal price = 0;
-			List<Price> Prices;
-
-			// Get the prices for the security.
-			using (var db = new CouatlContext())
-			{
-				Prices = db.Prices.Where(p => p.SecurityId == security.SecurityId).ToList();
-			}
-
-			// Sort by date.
-			Prices.Sort((x, y) => DateTime.Compare(x.Date, y.Date));
-
-			// Grab the price value of the list item in the list.
-			price = Prices.Last().Amount;
-
-			return price;
+			return GetNewestPrice(security.SecurityId);
 		}
 
 		static public decimal GetNewestPrice(int id)
 		{
-			return 0;
+			decimal price = 0;
+			List<Price> Prices = null;
+
+			// Get the prices for the security.
+			using (var db = new CouatlContext())
+			{
+				if (db.Securities.Find(id) != null)
+					Prices = db.Prices.Where(p => p.SecurityId == id).ToList();
+			}
+
+			// If the id is bad, then throw an exception.
+			if (Prices == null)
+				throw new ArgumentException();
+
+			// If there are no prices yet for this security, return 0.
+			// Otherwise return the most recent value.
+			if (Prices.Count > 0)
+			{
+				// Sort by date.
+				Prices.Sort((x, y) => DateTime.Compare(x.Date, y.Date));
+
+				//TODO: Is it possible to have multiple prices for the same date?
+				// If so, prefer closing to not-closing. However, it might be that
+				// the Add-Price action will take care of this for us.
+
+				// Grab the price value of the list item in the list.
+				price = Prices.Last().Amount;
+			}
+
+			return price;
 		}
 
 		static public List<Security> GetSecurities()

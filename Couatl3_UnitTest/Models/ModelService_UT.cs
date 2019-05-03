@@ -1115,6 +1115,43 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void GetNewestPrice_BadSecId()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPBSI", "Get Newest Price Bad SecId");
+
+			DateTime theDate = DateTime.Now;
+			decimal theAmount = 4.37M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ACT
+			// This assumes that theSec is using the highest ID, thus +1 is not in use yet.
+			decimal actPrice = ModelService.GetNewestPrice(theSec.SecurityId + 123);
+
+			// ASSERT
+			Assert.AreEqual(theAmount, actPrice);
+		}
+
+		[TestMethod]
+		public void GetNewestPrice_NoPrice()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GNPNP", "Get Newest Price No Price");
+
+			// ACT
+			decimal actPrice = ModelService.GetNewestPrice(theSec.SecurityId);
+
+			// ASSERT
+			Assert.AreEqual(0, actPrice);
+		}
+
+		[TestMethod]
 		public void GetNewestPriceNoBuyXact_OneSecMultiplePrices()
 		{
 			// ASSEMBLE
