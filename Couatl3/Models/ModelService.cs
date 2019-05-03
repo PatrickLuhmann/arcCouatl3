@@ -267,8 +267,14 @@ namespace Couatl3.Models
 						}
 						else
 						{
+							// Update the database.
 							thePos.Quantity += theXact.Quantity;
 							UpdatePosition(thePos);
+
+							// Update the Account object.
+							int idx = theAcct.Positions.FindIndex(p => p.PositionId == thePos.PositionId);
+							theAcct.Positions.RemoveAt(idx);
+							theAcct.Positions.Add(thePos);
 						}
 
 						ModelService.AddPrice(theXact);
@@ -289,8 +295,14 @@ namespace Couatl3.Models
 						}
 						else
 						{
+							// Update the database.
 							thePos.Quantity -= theXact.Quantity;
 							UpdatePosition(thePos);
+
+							// Update the Account object.
+							int idx = theAcct.Positions.FindIndex(p => p.PositionId == thePos.PositionId);
+							theAcct.Positions.RemoveAt(idx);
+							theAcct.Positions.Add(thePos);
 						}
 
 						ModelService.AddPrice(theXact);

@@ -135,6 +135,16 @@ namespace Couatl3_UnitTest
 			ModelService.AddTransaction(theAcct, theXact);
 
 			// ASSERT
+			// Verify the Account object.
+			Assert.AreEqual(2, theAcct.Positions.Count);
+			int idx = theAcct.Positions.FindIndex(p => p.SecurityId == theSec.SecurityId);
+			Assert.AreEqual(10, theAcct.Positions[idx].Quantity);
+			Assert.AreEqual(theSec.SecurityId, theAcct.Positions[idx].SecurityId);
+			idx = theAcct.Positions.FindIndex(p => p.SecurityId == preSec.SecurityId);
+			Assert.AreEqual(349, theAcct.Positions[idx].Quantity);
+			Assert.AreEqual(preSec.SecurityId, theAcct.Positions[idx].SecurityId);
+
+			// Verify the database.
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count + 1, afterXactList.Count);
 			Transaction actXact0 = afterXactList.Find(x => x.TransactionId == theXact.TransactionId);
@@ -197,6 +207,13 @@ namespace Couatl3_UnitTest
 			ModelService.AddTransaction(theAcct, theXact);
 
 			// ASSERT
+			// Verify the Account object.
+			Assert.AreEqual(1, theAcct.Positions.Count);
+			int idx = theAcct.Positions.FindIndex(p => p.SecurityId == theSec.SecurityId);
+			Assert.AreEqual(35, theAcct.Positions[idx].Quantity);
+			Assert.AreEqual(theSec.SecurityId, theAcct.Positions[idx].SecurityId);
+
+			// Verify the database.
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
 			Transaction actXact = afterXactList.Find(x => x.TransactionId == theXact.TransactionId);
@@ -263,6 +280,13 @@ namespace Couatl3_UnitTest
 			ModelService.AddTransaction(theAcct, theXact);
 
 			// ASSERT
+			// Verify the Account object.
+			Assert.AreEqual(1, theAcct.Positions.Count);
+			int idx = theAcct.Positions.FindIndex(p => p.SecurityId == theSec.SecurityId);
+			Assert.AreEqual(10 - qty, theAcct.Positions[idx].Quantity);
+			Assert.AreEqual(theSec.SecurityId, theAcct.Positions[idx].SecurityId);
+
+			// Verify the database.
 			List<Transaction> afterXactList = ModelService.GetTransactions();
 			Assert.AreEqual(beforeXactList.Count + 2, afterXactList.Count);
 			Transaction actXact = afterXactList.Find(x => x.TransactionId == theXact.TransactionId);
