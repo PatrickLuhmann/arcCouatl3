@@ -1293,6 +1293,59 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(thePrice, actPrice);
 		}
 
+		[TestMethod]
+		public void GetPrice_PriceExists()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("GPPE", "Get Price Price Exists");
+			
+			// Add a couple of prices we aren't interested in.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/15/2008"), 3.34M, false);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("9/4/2015"), 37.05M, false);
+
+			// Add the price we will be fetching.
+			DateTime theDate = DateTime.Parse("6/8/2012");
+			decimal thePrice = 6.32M;
+			ModelService.AddPrice(theSec.SecurityId, theDate, thePrice, false);
+
+			// Add a couple of prices we aren't interested in.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/1/1976"), 92.11M, false);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/9/1970"), 151.42M, false);
+
+			// ACT
+			decimal actPrice = ModelService.GetPrice(theSec, theDate);
+
+			// ASSERT
+			Assert.AreEqual(thePrice, actPrice);
+		}
+
+		[TestMethod]
+		public void GetPrice_PriceDoesNotExist()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("GPPDNE", "Get Price Price Does Not Exist");
+
+			// Add a couple of prices we aren't interested in.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/15/2008"), 3.34M, false);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("9/4/2015"), 37.05M, false);
+
+			// Pick a date for which there is no price.
+			DateTime theDate = DateTime.Parse("6/8/2012");
+			decimal thePrice = 0;
+
+			// Add a couple of prices we aren't interested in.
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/1/1976"), 92.11M, false);
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/9/1970"), 151.42M, false);
+
+			// ACT
+			decimal actPrice = ModelService.GetPrice(theSec, theDate);
+
+			// ASSERT
+			Assert.AreEqual(thePrice, actPrice);
+		}
+
 		#region Helper Functions
 		Account AddAccount(string name, string inst)
 		{

@@ -219,6 +219,27 @@ namespace Couatl3.Models
 			return price;
 		}
 
+		static public decimal GetPrice(int secId, DateTime date)
+		{
+			decimal price = 0;
+			List<Price> prices;
+			using (var db = new CouatlContext())
+			{
+				if (db.Securities.Find(secId) != null)
+				{
+					prices = db.Prices.Where(p => p.SecurityId == secId && p.Date == date).ToList();
+					if (prices.Count > 0)
+						price = prices[0].Amount;
+				}
+			}
+			return price;
+		}
+
+		static public decimal GetPrice(Security security, DateTime date)
+		{
+			return GetPrice(security.SecurityId, date);
+		}
+
 		static public List<Security> GetSecurities()
 		{
 			List<Security> theList;
@@ -426,7 +447,7 @@ namespace Couatl3.Models
 		}
 #endregion
 
-#region Position
+		#region Position
 		static private void AddPosition(Account theAcct, Position thePos)
 		{
 			theAcct.Positions.Add(thePos);
