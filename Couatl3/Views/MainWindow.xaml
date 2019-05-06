@@ -42,15 +42,29 @@
                 </ListView>
                 <ContentControl Content="{Binding SelectedAccount}" ContentTemplate="{StaticResource AccountTemplate}"/>
             </StackPanel>
-            <ListView ItemsSource="{Binding PocSecList}">
-                <ListView.View>
-                    <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of securities">
-                        <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Header="Symbol"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name"/>
-                        <GridViewColumn DisplayMemberBinding="{Binding SecurityId}" Header="ID"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <StackPanel Orientation="Horizontal">
+                <ListView ItemsSource="{Binding PocSecList}">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of securities">
+                            <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Header="Symbol"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding SecurityId}" Header="ID"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <ListView ItemsSource="{Binding PocPriceList}">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of prices">
+                            <GridViewColumn DisplayMemberBinding="{Binding PriceId}" Header="PriceID"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Amount}" Header="Amount"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Date}" Header="Date"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding Closing}" Header="Closing"/>
+                            <GridViewColumn DisplayMemberBinding="{Binding SecurityId}" Header="SecID"/>
+                        </GridView>
+                    </ListView.View>
+
+                </ListView>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

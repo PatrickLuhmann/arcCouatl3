@@ -44,6 +44,7 @@ namespace Couatl3.ViewModels
 				if (selectedAccount != null)
 					selectedAccount.SelectedTransaction = null;
 				RaisePropertyChanged("SelectedAccount");
+				RaisePropertyChanged("PocPriceList"); // hack
 			}
 		}
 
@@ -71,6 +72,20 @@ namespace Couatl3.ViewModels
 				using (var db = new CouatlContext())
 				{
 					list = db.Securities.ToList();
+				}
+				return list;
+			}
+			private set { }
+		}
+
+		public List<Price> PocPriceList
+		{
+			get
+			{
+				List<Price> list;
+				using (var db = new CouatlContext())
+				{
+					list = db.Prices.ToList();
 				}
 				return list;
 			}
