@@ -149,7 +149,6 @@ namespace Couatl3.Models
 
 		static public void AddPrice(int securityId, DateTime date, decimal amount, bool closing)
 		{
-			// TODO: Should AddPrice make sure there is only one price per date?
 			Price thePrice = new Price();
 			thePrice.Amount = amount;
 			thePrice.Date = date;
@@ -158,7 +157,34 @@ namespace Couatl3.Models
 
 			using (var db = new CouatlContext())
 			{
-				db.Prices.Add(thePrice);
+				bool addNewPrice = true;
+
+				// Check for existing price.
+				List<Price> prices;
+				prices = db.Prices.Where(p => p.SecurityId == securityId && p.Date == date).ToList();
+
+				// If there is more than one price for this date, then the database is in an invalid state.
+				// TODO: Gracefully handle more than one price per date?
+				if (prices.Count > 1)
+					throw new IndexOutOfRangeException();
+				else if (prices.Count == 1)
+				{
+					// Remove the existing price, if necessary.
+					// A non-closing price will always be removed in favor of a more-recent price.
+					// A closing price will only be removed if the new price is also a closing price
+					// (presumanly this means that the earlier closing price was incorrect).
+					if (!prices[0].Closing || closing)
+					{
+						db.Attach(prices[0]);
+						db.Remove(prices[0]);
+					}
+					else
+						addNewPrice = false;
+				}
+
+				if (addNewPrice)
+					db.Prices.Add(thePrice);
+
 				db.SaveChanges();
 			}
 		}

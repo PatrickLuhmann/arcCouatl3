@@ -1120,6 +1120,119 @@ namespace Couatl3_UnitTest
 		}
 
 		[TestMethod]
+		public void AddPrice_NonClosingReplacesNonClosing()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APNCRNC", "Add Price Non Closing Replaces Non Closing");
+
+			// Add the initial price for the date.
+			DateTime theDate = DateTime.Now;
+			ModelService.AddPrice(theSec.SecurityId, theDate, 12.34M, false);
+
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			// ACT
+			decimal theAmount = 4.07M;
+			bool theClosing = false;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count, afterPriceList.Count); // no net change in # prices
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(theDate, actPrice.Date);
+			Assert.AreEqual(theAmount, actPrice.Amount);
+			Assert.AreEqual(theClosing, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void AddPrice_NonClosingDoesNotReplaceClosing()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APNCDNRC", "Add Price Non Closing Does Not Replace Closing");
+
+			// Add the initial price for the date.
+			DateTime theDate = DateTime.Now;
+			decimal closingPrice = 12.34M;
+			ModelService.AddPrice(theSec.SecurityId, theDate, closingPrice, true);
+
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			// ACT
+			decimal theAmount = 4.07M;
+			bool theClosing = false;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count, afterPriceList.Count); // no net change in # prices
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(theDate, actPrice.Date);
+			Assert.AreEqual(closingPrice, actPrice.Amount);
+			Assert.AreEqual(true, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void AddPrice_ClosingReplacesNonClosing()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APCRNC", "Add Price Closing Replaces Non Closing");
+
+			// Add the initial price for the date.
+			DateTime theDate = DateTime.Now;
+			ModelService.AddPrice(theSec.SecurityId, theDate, 12.34M, false);
+
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			// ACT
+			decimal theAmount = 4.07M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count, afterPriceList.Count); // no net change in # prices
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(theDate, actPrice.Date);
+			Assert.AreEqual(theAmount, actPrice.Amount);
+			Assert.AreEqual(theClosing, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
+		public void AddPrice_ClosingReplacesClosing()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Security theSec = AddSecurity("APCRNC", "Add Price Closing Replaces Closing");
+
+			// Add the initial price for the date.
+			DateTime theDate = DateTime.Now;
+			ModelService.AddPrice(theSec.SecurityId, theDate, 12.34M, true);
+
+			List<Price> beforePriceList = ModelService.GetPrices();
+
+			// ACT
+			decimal theAmount = 4.07M;
+			bool theClosing = true;
+			ModelService.AddPrice(theSec.SecurityId, theDate, theAmount, theClosing);
+
+			// ASSERT
+			List<Price> afterPriceList = ModelService.GetPrices();
+			Assert.AreEqual(beforePriceList.Count, afterPriceList.Count); // no net change in # prices
+			Price actPrice = afterPriceList.Last();
+			Assert.AreEqual(theDate, actPrice.Date);
+			Assert.AreEqual(theAmount, actPrice.Amount);
+			Assert.AreEqual(theClosing, actPrice.Closing);
+			Assert.AreEqual(theSec.SecurityId, actPrice.SecurityId);
+		}
+
+		[TestMethod]
 		public void GetNewestPriceNoBuyXact_Basic()
 		{
 			// ASSEMBLE
