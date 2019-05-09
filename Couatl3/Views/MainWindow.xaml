@@ -17,32 +17,36 @@
         </DataTemplate>
     </Window.Resources>
     <Grid>
-        <StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Button Command="{Binding RelayAddAccountCmd}">Add Account</Button>
-                <Button Command="{Binding RelayDeleteAccountCmd}">Delete Account</Button>
-                <Button Command="{Binding RelayAddSecurityCmd}">Add Security</Button>
-                <TextBox Name="PocSecSym" Width="50" Text="{Binding PocSecSym}"></TextBox>
-                <TextBox Name="PocSecName" Width="100" Text="{Binding PocSecName}"></TextBox>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Margin="5">Number Of Accounts: </TextBlock>
-                <TextBlock Margin="5" Text="{Binding Accounts.Count}"/>
-                <TextBlock Margin="5">Number Of Transactions: </TextBlock>
-                <TextBlock Margin="5" Text="{Binding NumXacts}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}">
-                    <ListView.View>
-                        <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
-                            <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Name}" Header="Name"/>
-                            <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Institution}" Header="Institution"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-                <ContentControl Content="{Binding SelectedAccount}" ContentTemplate="{StaticResource AccountTemplate}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
+        <TabControl>
+            <TabItem Header="Accounts">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding RelayAddAccountCmd}">Add Account</Button>
+                        <Button Command="{Binding RelayDeleteAccountCmd}">Delete Account</Button>
+                        <Button Command="{Binding RelayAddSecurityCmd}">Add Security</Button>
+                        <TextBox Name="PocSecSym" Width="50" Text="{Binding PocSecSym}"></TextBox>
+                        <TextBox Name="PocSecName" Width="100" Text="{Binding PocSecName}"></TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="5">Number Of Accounts:</TextBlock>
+                        <TextBlock Margin="5" Text="{Binding Accounts.Count}"/>
+                        <TextBlock Margin="5">Number Of Transactions:</TextBlock>
+                        <TextBlock Margin="5" Text="{Binding NumXacts}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}">
+                            <ListView.View>
+                                <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
+                                    <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Name}" Header="Name"/>
+                                    <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Institution}" Header="Institution"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <ContentControl Content="{Binding SelectedAccount}" ContentTemplate="{StaticResource AccountTemplate}"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Symbols">
                 <ListView ItemsSource="{Binding PocSecList}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of securities">
@@ -52,6 +56,8 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
+            </TabItem>
+            <TabItem Header="Prices">
                 <ListView ItemsSource="{Binding PocPriceList}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of prices">
@@ -62,9 +68,8 @@
                             <GridViewColumn DisplayMemberBinding="{Binding SecurityId}" Header="SecID"/>
                         </GridView>
                     </ListView.View>
-
                 </ListView>
-            </StackPanel>
-        </StackPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
