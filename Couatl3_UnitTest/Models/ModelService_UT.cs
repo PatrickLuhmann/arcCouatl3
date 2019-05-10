@@ -1460,7 +1460,7 @@ namespace Couatl3_UnitTest
 		}
 
 		#region Helper Functions
-		Account AddAccount(string name, string inst)
+		static public Account AddAccount(string name, string inst)
 		{
 			Account theAcct = new Account
 			{
@@ -1471,7 +1471,7 @@ namespace Couatl3_UnitTest
 			return theAcct;
 		}
 
-		Security AddSecurity(string symbol, string name)
+		static public Security AddSecurity(string symbol, string name)
 		{
 			Security theSec = new Security { Symbol = symbol, Name = name };
 			ModelService.AddSecurity(theSec);

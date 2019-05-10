@@ -187,6 +187,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\GlobalPositions_View.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -203,12 +207,16 @@
     <Compile Include="Models\CouatlContext.cs" />
     <Compile Include="Models\ModelService.cs" />
     <Compile Include="ViewModels\Account_VM.cs" />
+    <Compile Include="ViewModels\GlobalPositions_VM.cs" />
     <Compile Include="ViewModels\Main_VM.cs" />
     <Compile Include="Views\Account_View.xaml.cs">
       <DependentUpon>Account_View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditTransaction_View.xaml.cs">
       <DependentUpon>EditTransaction_View.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GlobalPositions_View.xaml.cs">
+      <DependentUpon>GlobalPositions_View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
