@@ -33,7 +33,7 @@
                         <TextBlock Margin="5">Number Of Transactions:</TextBlock>
                         <TextBlock Margin="5" Text="{Binding NumXacts}"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical">
                         <ListView ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}">
                             <ListView.View>
                                 <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
