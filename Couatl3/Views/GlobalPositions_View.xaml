@@ -14,10 +14,12 @@
     <Grid>
         <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Positions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding PositionId}" Header="PositionId"/>
-                <DataGridTextColumn Binding="{Binding Quantity}" Header="Quantity"/>
-                <DataGridTextColumn Binding="{Binding SecurityId}" Header="SecurityId"/>
-                <DataGridTextColumn Binding="{Binding AccountId}" Header="AccountId"/>
+                <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
+                <DataGridTextColumn Binding="{Binding SecurityName}" Header="Security Name"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
+                <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.SecurityId}" Header="SecurityId"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.AccountId}" Header="AccountId"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

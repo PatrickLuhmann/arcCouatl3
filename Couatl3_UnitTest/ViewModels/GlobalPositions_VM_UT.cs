@@ -31,7 +31,7 @@ namespace Couatl3_UnitTest.ViewModels
 
 			// ACT
 			GlobalPositions_VM testVM = new GlobalPositions_VM();
-			List<Position> positions = testVM.Positions;
+			List<GlobalPosition_VM> positions = testVM.Positions;
 
 			// ASSERT
 			Assert.IsNotNull(positions);
@@ -43,11 +43,13 @@ namespace Couatl3_UnitTest.ViewModels
 		{
 			// ASSEMBLE
 			Account theAcct = ModelService_UT.AddAccount("Test Account Name", "Test Institution Name");
+
+			// Add the transactions that create the positions.
 			Security theSec1 = ModelService_UT.AddSecurity("OAWP1", "One Account With Positions 1");
 			decimal sec1Qty = 7.31M;
 			Transaction sec1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec1.SecurityId,
 				Quantity = sec1Qty,
@@ -59,7 +61,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec2Qty = 5.01M;
 			Transaction sec2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2.SecurityId,
 				Quantity = sec2Qty,
@@ -67,22 +69,34 @@ namespace Couatl3_UnitTest.ViewModels
 				Fee = 21.12M,
 			};
 			ModelService.AddTransaction(theAcct, sec2Xact);
-			
+
+			// Update the prices.
+			decimal sec1Mrp = 2.43M;
+			ModelService.AddPrice(theSec1.SecurityId, DateTime.Today, sec1Mrp, true);
+			decimal sec2Mrp = 4.24M;
+			ModelService.AddPrice(theSec2.SecurityId, DateTime.Today, sec2Mrp, true);
+
 			// ACT
 			GlobalPositions_VM testVM = new GlobalPositions_VM();
-			List<Position> positions = testVM.Positions;
+			List<GlobalPosition_VM> positions = testVM.Positions;
 
 			// ASSERT
 			Assert.IsNotNull(positions);
 			Assert.AreEqual(2, positions.Count);
-			Position actPos = positions.Find(p => p.SecurityId == theSec1.SecurityId);
-			Assert.AreEqual(sec1Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
-			actPos = positions.Find(p => p.SecurityId == theSec2.SecurityId);
-			Assert.AreEqual(sec2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			GlobalPosition_VM actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
+			Assert.AreEqual(theSec1.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec1.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec1Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec1Qty * sec1Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2.SecurityId);
+			Assert.AreEqual(theSec2.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec2.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec2Qty * sec2Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 		}
 
 		[TestMethod]
@@ -90,11 +104,13 @@ namespace Couatl3_UnitTest.ViewModels
 		{
 			// ASSEMBLE
 			Account theAcct1 = ModelService_UT.AddAccount("Test Account Name 1", "Test Institution Name 1");
+
+			// Add the transactions that create the positions.
 			Security theSec1_1 = ModelService_UT.AddSecurity("TAWDP1-1", "Two Accounts With Different Positions 1-1");
 			decimal sec1_1Qty = 7.31M;
 			Transaction sec1_1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec1_1.SecurityId,
 				Quantity = sec1_1Qty,
@@ -106,7 +122,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec1_2Qty = 5.01M;
 			Transaction sec1_2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec1_2.SecurityId,
 				Quantity = sec1_2Qty,
@@ -120,7 +136,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec2_1Qty = 6.14M;
 			Transaction sec2_1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2_1.SecurityId,
 				Quantity = sec2_1Qty,
@@ -132,7 +148,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec2_2Qty = 2.08M;
 			Transaction sec2_2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2_2.SecurityId,
 				Quantity = sec2_2Qty,
@@ -141,31 +157,53 @@ namespace Couatl3_UnitTest.ViewModels
 			};
 			ModelService.AddTransaction(theAcct2, sec2_2Xact);
 
+			// Update the prices.
+			decimal sec1_1Mrp = 3.10M;
+			ModelService.AddPrice(theSec1_1.SecurityId, DateTime.Today, sec1_1Mrp, true);
+			decimal sec1_2Mrp = 4.30M;
+			ModelService.AddPrice(theSec1_2.SecurityId, DateTime.Today, sec1_2Mrp, true);
+			decimal sec2_1Mrp = 4.38M;
+			ModelService.AddPrice(theSec2_1.SecurityId, DateTime.Today, sec2_1Mrp, true);
+			decimal sec2_2Mrp = 6.41M;
+			ModelService.AddPrice(theSec2_2.SecurityId, DateTime.Today, sec2_2Mrp, true);
+
 			// ACT
 			GlobalPositions_VM testVM = new GlobalPositions_VM();
-			List<Position> positions = testVM.Positions;
+			List<GlobalPosition_VM> positions = testVM.Positions;
 
 			// ASSERT
 			Assert.IsNotNull(positions);
 			Assert.AreEqual(4, positions.Count);
 			// from account 1
-			Position actPos = positions.Find(p => p.SecurityId == theSec1_1.SecurityId);
-			Assert.AreEqual(sec1_1Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
-			actPos = positions.Find(p => p.SecurityId == theSec1_2.SecurityId);
-			Assert.AreEqual(sec1_2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			GlobalPosition_VM actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1_1.SecurityId);
+			Assert.AreEqual(theSec1_1.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec1_1.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec1_1Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec1_1Qty * sec1_1Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1_2.SecurityId);
+			Assert.AreEqual(theSec1_2.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec1_2.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec1_2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec1_2Qty * sec1_2Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 			// from account 2
-			actPos = positions.Find(p => p.SecurityId == theSec2_1.SecurityId);
-			Assert.AreEqual(sec2_1Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
-			actPos = positions.Find(p => p.SecurityId == theSec2_2.SecurityId);
-			Assert.AreEqual(sec2_2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2_1.SecurityId);
+			Assert.AreEqual(theSec2_1.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec2_1.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec2_1Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec2_1Qty * sec2_1Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2_2.SecurityId);
+			Assert.AreEqual(theSec2_2.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec2_2.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec2_2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec2_2Qty * sec2_2Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 		}
 
 		[TestMethod]
@@ -173,11 +211,13 @@ namespace Couatl3_UnitTest.ViewModels
 		{
 			// ASSEMBLE
 			Account theAcct1 = ModelService_UT.AddAccount("Test Account Name 1", "Test Institution Name 1");
+
+			// Add the transactions that create the positions.
 			Security theSec1_1 = ModelService_UT.AddSecurity("TAWDP1-1", "Two Accounts With Different Positions 1-1");
 			decimal sec1_1Qty = 7.31M;
 			Transaction sec1_1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec1_1.SecurityId,
 				Quantity = sec1_1Qty,
@@ -189,7 +229,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec1_2Qty = 5.01M;
 			Transaction sec1_2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec1_2.SecurityId,
 				Quantity = sec1_2Qty,
@@ -203,7 +243,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec2_1Qty = 6.14M;
 			Transaction sec2_1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2_1.SecurityId,
 				Quantity = sec2_1Qty,
@@ -215,7 +255,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal sec2_2Qty = 2.08M;
 			Transaction sec2_2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2_2.SecurityId,
 				Quantity = sec2_2Qty,
@@ -228,7 +268,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal secShared1Qty = 5.13M;
 			Transaction secShared1Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSecShared.SecurityId,
 				Quantity = secShared1Qty,
@@ -239,7 +279,7 @@ namespace Couatl3_UnitTest.ViewModels
 			decimal secShared2Qty = 7.46M;
 			Transaction secShared2Xact = new Transaction
 			{
-				Date = DateTime.Now,
+				Date = DateTime.Parse("2018-05-13"),
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSecShared.SecurityId,
 				Quantity = secShared2Qty,
@@ -248,36 +288,63 @@ namespace Couatl3_UnitTest.ViewModels
 			};
 			ModelService.AddTransaction(theAcct2, secShared2Xact);
 
+			// Update the prices.
+			decimal sec1_1Mrp = 4.57M;
+			ModelService.AddPrice(theSec1_1.SecurityId, DateTime.Today, sec1_1Mrp, true);
+			decimal sec1_2Mrp = 22.40M;
+			ModelService.AddPrice(theSec1_2.SecurityId, DateTime.Today, sec1_2Mrp, true);
+			decimal sec2_1Mrp = 2.54M;
+			ModelService.AddPrice(theSec2_1.SecurityId, DateTime.Today, sec2_1Mrp, true);
+			decimal sec2_2Mrp = 9.00M;
+			ModelService.AddPrice(theSec2_2.SecurityId, DateTime.Today, sec2_2Mrp, true);
+			decimal secSharedMrp = 10.58M;
+			ModelService.AddPrice(theSecShared.SecurityId, DateTime.Today, secSharedMrp, true);
+
 			// ACT
 			GlobalPositions_VM testVM = new GlobalPositions_VM();
-			List<Position> positions = testVM.Positions;
+			List<GlobalPosition_VM> positions = testVM.Positions;
 
 			// ASSERT
 			Assert.IsNotNull(positions);
 			Assert.AreEqual(5, positions.Count);
 			// from account 1
-			Position actPos = positions.Find(p => p.SecurityId == theSec1_1.SecurityId);
-			Assert.AreEqual(sec1_1Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
-			actPos = positions.Find(p => p.SecurityId == theSec1_2.SecurityId);
-			Assert.AreEqual(sec1_2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			GlobalPosition_VM actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1_1.SecurityId);
+			Assert.AreEqual(theSec1_1.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec1_1.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec1_1Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec1_1Qty * sec1_1Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1_2.SecurityId);
+			Assert.AreEqual(theSec1_2.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec1_2.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec1_2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec1_2Qty * sec1_2Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 			// from account 2
-			actPos = positions.Find(p => p.SecurityId == theSec2_1.SecurityId);
-			Assert.AreEqual(sec2_1Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
-			actPos = positions.Find(p => p.SecurityId == theSec2_2.SecurityId);
-			Assert.AreEqual(sec2_2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2_1.SecurityId);
+			Assert.AreEqual(theSec2_1.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec2_1.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec2_1Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec2_1Qty * sec2_1Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2_2.SecurityId);
+			Assert.AreEqual(theSec2_2.Name, actPos.SecurityName);
+			Assert.AreEqual(theSec2_2.Symbol, actPos.Symbol);
+			Assert.AreEqual(sec2_2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual(sec2_2Qty * sec2_2Mrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 			// shared position
-			actPos = positions.Find(p => p.SecurityId == theSecShared.SecurityId);
-			Assert.AreEqual(secShared1Qty + secShared2Qty, actPos.Quantity);
-			Assert.AreEqual(0, actPos.AccountId);
-			Assert.AreEqual(null, actPos.Account);
+			actPos = positions.Find(p => p.ThePosition.SecurityId == theSecShared.SecurityId);
+			Assert.AreEqual(theSecShared.Name, actPos.SecurityName);
+			Assert.AreEqual(theSecShared.Symbol, actPos.Symbol);
+			Assert.AreEqual(secShared1Qty + secShared2Qty, actPos.ThePosition.Quantity);
+			Assert.AreEqual((secShared1Qty + secShared2Qty) * secSharedMrp, actPos.Value);
+			Assert.AreEqual(0, actPos.ThePosition.AccountId);
+			Assert.AreEqual(null, actPos.ThePosition.Account);
 		}
 	}
 }

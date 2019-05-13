@@ -9,12 +9,11 @@ namespace Couatl3.ViewModels
 {
 	public class GlobalPositions_VM
 	{
-		private List<Position> positions;
-		public List<Position> Positions
+		private List<GlobalPosition_VM> positions;
+		public List<GlobalPosition_VM> Positions
 		{
 			get
 			{
-				// TODO: Do we need to recalculate every time? Or is once at construction time sufficient?
 				return positions;
 			}
 			private set
@@ -22,10 +21,10 @@ namespace Couatl3.ViewModels
 				positions = value;
 			}
 		}
-		
+
 		public GlobalPositions_VM()
 		{
-			positions = new List<Position>();
+			positions = new List<GlobalPosition_VM>();
 
 			// Get the open accounts.
 			List<Account> accounts = ModelService.GetAccounts(true);
@@ -37,23 +36,46 @@ namespace Couatl3.ViewModels
 
 				foreach (Position acctPos in account_positions)
 				{
-					Position pos = positions.Find(p => p.SecurityId == acctPos.SecurityId);
+					GlobalPosition_VM pos = positions.Find(p => p.ThePosition.SecurityId == acctPos.SecurityId);
 					if (pos == null)
 					{
-						positions.Add(new Position
+						string secName = ModelService.GetSecurityNameFromId(acctPos.SecurityId);
+						string secSym = ModelService.GetSymbolFromId(acctPos.SecurityId);
+						GlobalPosition_VM glPos = new GlobalPosition_VM()
 						{
-							PositionId = acctPos.PositionId,
-							Quantity = acctPos.Quantity,
-							SecurityId = acctPos.SecurityId,
-							// This Position can aggregate multiple Accounts, so ignore those fields.
-						});
+							ThePosition = acctPos,
+							SecurityName = secName,
+							Symbol = secSym,
+						};
+						// Clear invalid properties.
+						glPos.ThePosition.Account = null;
+						glPos.ThePosition.AccountId = 0;
+						positions.Add(glPos);
 					}
 					else
 					{
-						pos.Quantity += acctPos.Quantity;
+						pos.ThePosition.Quantity += acctPos.Quantity;
 					}
 				}
 			}
+
+			// Determine the current value of each position, now
+			// that we have the final quantity for each of them.
+			foreach (var pos in positions)
+			{
+				pos.Value = pos.ThePosition.Quantity * ModelService.GetNewestPrice(pos.ThePosition.SecurityId);
+			}
 		}
+	}
+
+	public class GlobalPosition_VM
+	{
+		public Position ThePosition { get; set; }
+
+		public string SecurityName { get; set; }
+
+		public string Symbol { get; set; }
+
+		public decimal Value { get; set; }
 	}
 }
