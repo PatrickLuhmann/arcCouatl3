@@ -203,7 +203,7 @@ namespace Couatl3.ViewModels
 				thePosition = value;
 				Value = thePosition.Quantity * ModelService.GetNewestPrice(thePosition.SecurityId);
 				Symbol = ModelService.GetSymbolFromId(ThePosition.SecurityId);
-				Name = Symbol + Symbol;
+				Name = ModelService.GetSecurityNameFromId(ThePosition.SecurityId);
 			}
 		}
 		public decimal Value { get; set; }
