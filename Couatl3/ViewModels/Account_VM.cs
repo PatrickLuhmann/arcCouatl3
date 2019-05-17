@@ -17,6 +17,13 @@ namespace Couatl3.ViewModels
 		public Account TheAccount { get; set; }
 		public ObservableCollection<Position_VM> MyPositions { get; private set; }
 		public ObservableCollection<Transaction_VM> MyTransactions { get; private set; }
+		public decimal Value
+		{
+			get
+			{
+				return ModelService.GetAccountValue(TheAccount);
+			}
+		}
 
 		private Transaction_VM selectedTransaction;
 		public Transaction_VM SelectedTransaction
@@ -65,6 +72,7 @@ namespace Couatl3.ViewModels
 				// TODO: Move the selection to the next/previous item in the list.
 				SelectedTransaction = null;
 				MyParent.NotifyNumXacts();
+				RaisePropertyChanged("Value");
 			}
 		}
 
@@ -94,6 +102,7 @@ namespace Couatl3.ViewModels
 				//TODO: Update the things the ViewModel tracks.
 				CalculateCashBalance();
 				PopulatePositions();
+				RaisePropertyChanged("Value");
 			}
 		}
 
@@ -176,7 +185,6 @@ namespace Couatl3.ViewModels
 			}
 
 			// Update the Account value.
-			TheAccount.Cash = balance;
 			RaisePropertyChanged("TheAccount");
 		}
 	}

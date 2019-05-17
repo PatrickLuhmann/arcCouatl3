@@ -1459,6 +1459,374 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(thePrice, actPrice);
 		}
 
+		[TestMethod]
+		public void GetAccountValue_EmptyAccount()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(0, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_CashDepositOnly()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			decimal theVal = 4.03M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(theVal, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_CashWithdrawalOnly()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			// Value in xact is always positive even if it reduces the amount of cash.
+			decimal theVal = 4.19M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(-1 * theVal, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_FeeOnly()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			// Value in xact is always positive even if it reduces the amount of cash.
+			decimal theVal = 6.49M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Fee,
+				Value = theVal,
+				Fee = theVal,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(-1 * theVal, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_CashOnly()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			// Value in xact is always positive even if it reduces the amount of cash.
+			List<decimal> theVal = new List<decimal>();
+			Transaction theXact;
+			// First a Deposit.
+			theVal.Add(5.05M);
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal[0],
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// Then a Withdrawal.
+			theVal.Add(3.06M);
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal[1],
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// Another Withdrawal.
+			theVal.Add(4.28M);
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal[2],
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// End with a Deposit.
+			theVal.Add(6.00M);
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal[3],
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(theVal[0] - theVal[1] - theVal[2] + theVal[3], acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_OneSellNoNewerPrice()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GAVOSNNP", "Get Account Value One Sell No Newer Price");
+
+			decimal theQty = 2;
+			decimal thePrice = 5.09M;
+			decimal theFee = 3.44M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice - theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// At this point, the value of the security is the same as the cash,
+			// so there is no change. Only the Fee represents lost Value.
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(-1 * theFee, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_OneSellOneNewerPrice()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GAVOSONP", "Get Account Value One Sell One Newer Price");
+
+			decimal accumVal = 0;
+
+			decimal theQty = 2;
+			decimal thePrice = 21.09M;
+			decimal theFee = 2.42M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice - theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// The Fee is the only Value that has been lost.
+			accumVal -= theFee;
+
+			decimal theNewPrice = 18.07M;
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Today, theNewPrice, true);
+			// Apply the price change to the accumulation.
+			// NOTE: Because this is a Sell, the Quantity is actually negative.
+			accumVal += (-1 * theQty * (theNewPrice - thePrice));
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(accumVal, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_OneBuyNoNewerPrice()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GAVOBNNP", "Get Account Value One Buy No Newer Price");
+
+			decimal theQty = 2;
+			decimal thePrice = 5.11M;
+			decimal theFee = 0.33M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice + theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// At this point, the value of the security is the same as the cash,
+			// so there is no change. Only the Fee represents lost Value.
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(-1 * theFee, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_OneBuyOneNewerPrice()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GAVOBONP", "Get Account Value One Buy One Newer Price");
+
+			decimal accumVal = 0;
+
+			decimal theQty = 3;
+			decimal thePrice = 4.09M;
+			decimal theFee = 1.23M;
+			Transaction theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice + theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			// The Fee is the only Value that has been lost.
+			accumVal -= theFee;
+
+			decimal theNewPrice = 4.39M;
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Today, theNewPrice, true);
+			// Apply the price change to the accumulation.
+			accumVal += (theQty * (theNewPrice - thePrice));
+
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(accumVal, acctValue);
+		}
+
+		[TestMethod]
+		public void GetAccountValue_VariousXacts()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Security theSec = AddSecurity("GAVVX", "Get Account Value Various Xacts");
+
+			decimal accumCashVal = 0;
+			decimal accumQty = 0;
+
+			Transaction theXact;
+			decimal theVal;
+			decimal theQty;
+			decimal thePrice;
+			decimal theFee;
+
+			theVal = 5.59M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			accumCashVal += theXact.Value;
+
+			theQty = 12;
+			thePrice = 4.17M;
+			theFee = 4.19M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice + theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			accumCashVal -= theXact.Value;
+			accumQty += theQty;
+
+			theFee = 1.27M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Fee,
+				Value = theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			accumCashVal -= theXact.Value;
+
+			theQty = 2;
+			thePrice = 6.14M;
+			theFee = 0.38M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec.SecurityId,
+				Quantity = theQty,
+				Value = theQty * thePrice - theFee,
+				Fee = theFee,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			accumCashVal += theXact.Value;
+			accumQty -= theQty;
+
+			theVal = 6.49M;
+			theXact = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal,
+			};
+			ModelService.AddTransaction(theAcct, theXact);
+			accumCashVal -= theXact.Value;
+
+			//TODO: Add test for Dividend, StockSplit, TransferIn, TransferOut when they are implemented.
+
+			decimal theNewPrice = 3.10M;
+			ModelService.AddPrice(theSec.SecurityId, DateTime.Today, theNewPrice, true);
+			decimal secVal = accumQty * theNewPrice;
+			
+			// ACT
+			decimal acctValue = ModelService.GetAccountValue(theAcct);
+
+			// ASSERT
+			Assert.AreEqual(secVal + accumCashVal, acctValue);
+		}
+
 		#region Helper Functions
 		static public Account AddAccount(string name, string inst)
 		{

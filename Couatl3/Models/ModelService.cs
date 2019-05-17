@@ -75,6 +75,18 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
+
+		static public decimal GetAccountValue(Account account)
+		{
+			// Calculate the value of all the Positions.
+			decimal posValue = 0;
+			foreach (var pos in account.Positions)
+			{
+				posValue += (pos.Quantity * GetNewestPrice(pos.SecurityId));
+			}
+
+			return posValue + account.Cash;
+		}
 		#endregion
 
 		#region Security
@@ -309,6 +321,7 @@ namespace Couatl3.Models
 				switch (theXact.Type)
 				{
 					case (int)TransactionType.Buy:
+						// Update Positions.
 						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
 						if (thePos == null)
 						{
@@ -332,10 +345,15 @@ namespace Couatl3.Models
 							theAcct.Positions.Add(thePos);
 						}
 
+						// Update Cash.
+						theAcct.Cash -= theXact.Value;
+
+						// Update Prices.
 						ModelService.AddPrice(theXact);
 
 						break;
 					case (int)TransactionType.Sell:
+						// Update Positions.
 						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcct.AccountId && p.SecurityId == theXact.SecurityId);
 						if (thePos == null)
 						{
@@ -360,16 +378,33 @@ namespace Couatl3.Models
 							theAcct.Positions.Add(thePos);
 						}
 
+						// Update Cash.
+						theAcct.Cash += theXact.Value;
+
+						// Update Prices.
 						ModelService.AddPrice(theXact);
 
 						break;
 					case (int)TransactionType.Deposit:
+						// Update Cash.
+						theAcct.Cash += theXact.Value;
+
+						// Set the invalid fields for this type to default values.
+						theXact.Quantity = 0;
+						theXact.SecurityId = -1;
+						break;
 					case (int)TransactionType.Withdrawal:
+						// Update Cash.
+						theAcct.Cash -= theXact.Value;
+
 						// Set the invalid fields for this type to default values.
 						theXact.Quantity = 0;
 						theXact.SecurityId = -1;
 						break;
 					case (int)TransactionType.Fee:
+						// Update Cash.
+						theAcct.Cash -= theXact.Value;
+
 						// Set the invalid fields for this type to default values.
 						theXact.Quantity = 0;
 						theXact.SecurityId = -1;
