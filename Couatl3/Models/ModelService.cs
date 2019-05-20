@@ -429,46 +429,54 @@ namespace Couatl3.Models
 			}
 		}
 
-		static public Account DeleteTransaction(Transaction theXact)
+		static public void DeleteTransaction(Transaction theXact)
 		{
 			int theAcctId = theXact.Account.AccountId;
+			Account theAcct = theXact.Account;
 
 			// TODO: Data validation here? What to do if there is a problem?
 
-			using (var db = new CouatlContext())
+			Position thePos;
+			// TODO: Update Positions here if this is a StockSplit?
+			switch (theXact.Type)
 			{
-				Position thePos;
-				// TODO: Update Positions here if this is a Buy/Sell/StockSplit?
-				switch (theXact.Type)
-				{
-					case (int)TransactionType.Buy:
-						// Find the Position that this Buy affects.
-						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcctId && p.SecurityId == theXact.SecurityId);
+				case (int)TransactionType.Buy:
+					// Find the Position that this Buy affects.
+					thePos = theAcct.Positions.Find(p => p.SecurityId == theXact.SecurityId);
 
-						// Back out the shares that were added.
-						thePos.Quantity -= theXact.Quantity;
+					// Back out the shares that were added.
+					thePos.Quantity -= theXact.Quantity;
 
-						if (thePos.Quantity == 0)
-							DeletePosition(thePos);
-						else
-							UpdatePosition(thePos);
-						break;
-					case (int)TransactionType.Sell:
-						// Find the Position that this Sell affects.
-						thePos = db.Positions.FirstOrDefault(p => p.AccountId == theAcctId && p.SecurityId == theXact.SecurityId);
+					if (thePos.Quantity == 0)
+						DeletePosition(thePos);
+					else
+						UpdatePosition(thePos);
+					break;
+				case (int)TransactionType.Sell:
+					// Find the Position that this Sell affects.
+					thePos = theAcct.Positions.Find(p => p.SecurityId == theXact.SecurityId);
 
-						// Add back the shares that were removed.
-						thePos.Quantity += theXact.Quantity;
+					// Add back the shares that were removed.
+					thePos.Quantity += theXact.Quantity;
 
-						// TODO: Revisit the handling of short sells.
-						// It is possible that this Sell transaction was the only one for this position.
-						// In that case then we want to delete the entry in the Position table.
-						if (thePos.Quantity == 0)
-							DeletePosition(thePos);
-						else
-							UpdatePosition(thePos);
-						break;
-				}
+					// TODO: Revisit the handling of short sells.
+					// It is possible that this Sell transaction was the only one for this position.
+					// In that case then we want to delete the entry in the Position table.
+					if (thePos.Quantity == 0)
+						DeletePosition(thePos);
+					else
+						UpdatePosition(thePos);
+					break;
+				case (int)TransactionType.Deposit:
+					// Update Cash.
+					theAcct.Cash -= theXact.Value;
+					UpdateAccount(theAcct);
+					break;
+				case (int)TransactionType.Withdrawal:
+					// Update Cash.
+					theAcct.Cash += theXact.Value;
+					UpdateAccount(theAcct);
+					break;
 			}
 
 			// Delete the transaction from the database table.
@@ -479,20 +487,6 @@ namespace Couatl3.Models
 				db.Transactions.Remove(theXact);
 				db.SaveChanges();
 			}
-
-			// Get an updated Account object and return it to the caller,
-			// so that they have the freshest version from the database.
-			Account tmpAcct;
-			using (var db = new CouatlContext())
-			{
-				List<Security> secList = db.Securities.ToList();
-				tmpAcct = db.Accounts
-					.Include(a => a.Transactions)
-					.Include(a => a.Positions)
-					.Single(a => a.AccountId == theAcctId);
-			}
-
-			return tmpAcct;
 		}
 
 		static public List<Transaction> GetTransactions()
@@ -506,7 +500,7 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
-#endregion
+		#endregion
 
 		#region Position
 		static private void AddPosition(Account theAcct, Position thePos)
@@ -545,6 +539,6 @@ namespace Couatl3.Models
 			}
 			return theList;
 		}
-#endregion
+		#endregion
 	}
 }

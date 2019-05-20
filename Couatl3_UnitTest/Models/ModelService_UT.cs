@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Couatl3_UnitTest
@@ -464,6 +465,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(feeXact.TransactionId, actAcct.Transactions[1].TransactionId);
 		}
 
+		#region DeleteTransaction tests
 		[TestMethod]
 		public void DeleteTransaction()
 		{
@@ -493,7 +495,7 @@ namespace Couatl3_UnitTest
 			List<Transaction> beforeXactList = ModelService.GetTransactions();
 
 			// ACT
-			theAcct = ModelService.DeleteTransaction(theAcct.Transactions[0]);
+			ModelService.DeleteTransaction(theAcct.Transactions[0]);
 
 			// ASSERT
 			Assert.AreEqual(1, theAcct.Transactions.Count);
@@ -545,8 +547,8 @@ namespace Couatl3_UnitTest
 			ModelService.AddTransaction(theAcct, twoXact);
 
 			// ACT
-			Transaction testXact = ModelService.GetTransactions().Find(t => t.TransactionId == twoXact.TransactionId);
-			theAcct = ModelService.DeleteTransaction(testXact);
+			Transaction testXact = theAcct.Transactions.Find(t => t.TransactionId == twoXact.TransactionId);
+			ModelService.DeleteTransaction(testXact);
 
 			// ASSERT
 			Assert.AreEqual(1, theAcct.Transactions.Count);
@@ -623,10 +625,8 @@ namespace Couatl3_UnitTest
 			List<Position> beforePositionList = ModelService.GetPositions();
 
 			// ACT
-			Transaction testXact = ModelService.GetTransactions().Find(t => t.TransactionId == one_xact);
-			theAcct = ModelService.DeleteTransaction(testXact);
-			testXact = ModelService.GetTransactions().Find(t => t.TransactionId == two_xact);
-			theAcct = ModelService.DeleteTransaction(testXact);
+			ModelService.DeleteTransaction(theAcct.Transactions[0]);
+			ModelService.DeleteTransaction(theAcct.Transactions[0]);
 
 			// ASSERT
 			// Verify both transactions are gone.
@@ -699,7 +699,7 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			// Now delete that sell transaction.
-			theAcct = ModelService.DeleteTransaction(theXact);
+			ModelService.DeleteTransaction(theXact);
 
 			// ASSERT
 			Assert.AreEqual(1, theAcct.Transactions.Count);
@@ -764,7 +764,7 @@ namespace Couatl3_UnitTest
 
 			// ACT
 			// Now delete that sell transaction.
-			theAcct = ModelService.DeleteTransaction(theXact);
+			ModelService.DeleteTransaction(theXact);
 
 			// ASSERT
 			Assert.AreEqual(0, theAcct.Transactions.Count);
@@ -787,6 +787,155 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(0, actAcct.Transactions.Count);
 			Assert.AreEqual(0, actAcct.Positions.Count);
 		}
+
+		[TestMethod]
+		public void DeleteTransaction_DepositReducesCash()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+
+			decimal theVal1 = 1000.00M;
+			Transaction theXact1 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal1,
+			};
+			ModelService.AddTransaction(theAcct, theXact1);
+			decimal theVal2 = 2000.00M;
+			Transaction theXact2 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal2,
+			};
+			ModelService.AddTransaction(theAcct, theXact2);
+
+			// ACT
+			ModelService.DeleteTransaction(theXact1);
+
+			// ASSERT
+			// Verify the object in memory.
+			Assert.AreEqual(theVal2, theAcct.Cash);
+			// Verify the object in the database.
+			List<Account> afterAccountList = ModelService.GetAccounts(true);
+			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(theVal2, actAcct.Cash);
+			Assert.AreEqual(1, actAcct.Transactions.Count);
+		}
+
+		[TestMethod]
+		public void DeleteTransaction_WithdrawalIncreasesCash()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+
+			decimal theVal1 = 5000.00M;
+			Transaction theXact1 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal1,
+			};
+			ModelService.AddTransaction(theAcct, theXact1);
+			decimal theVal2 = 2000.00M;
+			Transaction theXact2 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal2,
+			};
+			ModelService.AddTransaction(theAcct, theXact2);
+
+			// ACT
+			ModelService.DeleteTransaction(theXact2);
+
+			// ASSERT
+			// Verify the object in memory.
+			Assert.AreEqual(theVal1, theAcct.Cash);
+			// Verify the object in the database.
+			List<Account> afterAccountList = ModelService.GetAccounts(true);
+			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(theVal1, actAcct.Cash);
+			Assert.AreEqual(1, actAcct.Transactions.Count);
+		}
+
+		[TestMethod]
+		public void DeleteTransaction_DepositsAndWithdrawals()
+		{
+			// ASSEMBLE
+			ModelService.Initialize();
+			Account theAcct = AddAccount("Test Account Name", "Test Institution Name");
+			Transaction tmpXact;
+
+			// Emulate the way the app works by first adding a "blank" transaction
+			// then deleting it and adding the actual transaction.
+			tmpXact = new Transaction();
+			ModelService.AddTransaction(theAcct, tmpXact);
+			ModelService.DeleteTransaction(tmpXact);
+			decimal theVal1 = 1000.00M;
+			Transaction theXact1 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal1,
+			};
+			ModelService.AddTransaction(theAcct, theXact1);
+
+			tmpXact = new Transaction();
+			ModelService.AddTransaction(theAcct, tmpXact);
+			ModelService.DeleteTransaction(tmpXact);
+			decimal theVal2 = 2000.00M;
+			Transaction theXact2 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Deposit,
+				Value = theVal2,
+			};
+			ModelService.AddTransaction(theAcct, theXact2);
+
+			tmpXact = new Transaction();
+			ModelService.AddTransaction(theAcct, tmpXact);
+			ModelService.DeleteTransaction(tmpXact);
+			decimal theVal3 = 500.00M;
+			Transaction theXact3 = new Transaction
+			{
+				Date = DateTime.Today,
+				Type = (int)ModelService.TransactionType.Withdrawal,
+				Value = theVal3,
+			};
+			ModelService.AddTransaction(theAcct, theXact3);
+
+			// ACT I - Delete the first deposit
+			ModelService.DeleteTransaction(theXact1);
+
+			// ASSERT I
+			// Verify the objects in memory.
+			Assert.AreEqual(theVal2 - theVal3, theAcct.Cash);
+			Assert.AreEqual(theAcct.Cash, theXact2.Account.Cash);
+			Assert.AreEqual(theAcct.Cash, theXact3.Account.Cash);
+			// Verify the object in the database.
+			List<Account> afterAccountList = ModelService.GetAccounts(true);
+			Account actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(theVal2 - theVal3, actAcct.Cash);
+			Assert.AreEqual(2, actAcct.Transactions.Count);
+
+			// ACT II - Delete the withdrawal
+			ModelService.DeleteTransaction(theXact3);
+
+			// ASSERT II
+			// Verify the objects in memory.
+			Assert.AreEqual(theVal2, theAcct.Cash);
+			Assert.AreEqual(theAcct.Cash, theXact2.Account.Cash);
+			// Verify the object in the database.
+			afterAccountList = ModelService.GetAccounts(true);
+			actAcct = afterAccountList.Find(a => a.AccountId == theAcct.AccountId);
+			Assert.AreEqual(theVal2, actAcct.Cash);
+			Assert.AreEqual(1, actAcct.Transactions.Count);
+		}
+		#endregion
 
 		[TestMethod]
 		public void DeleteAccount()
@@ -1412,7 +1561,7 @@ namespace Couatl3_UnitTest
 			// ASSEMBLE
 			ModelService.Initialize();
 			Security theSec = AddSecurity("GPPE", "Get Price Price Exists");
-			
+
 			// Add a couple of prices we aren't interested in.
 			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("4/15/2008"), 3.34M, false);
 			ModelService.AddPrice(theSec.SecurityId, DateTime.Parse("9/4/2015"), 37.05M, false);
@@ -1819,7 +1968,7 @@ namespace Couatl3_UnitTest
 			decimal theNewPrice = 3.10M;
 			ModelService.AddPrice(theSec.SecurityId, DateTime.Today, theNewPrice, true);
 			decimal secVal = accumQty * theNewPrice;
-			
+
 			// ACT
 			decimal acctValue = ModelService.GetAccountValue(theAcct);
 
@@ -1827,7 +1976,7 @@ namespace Couatl3_UnitTest
 			Assert.AreEqual(secVal + accumCashVal, acctValue);
 		}
 
-		#region Helper Functions
+#region Helper Functions
 		static public Account AddAccount(string name, string inst)
 		{
 			Account theAcct = new Account
@@ -1861,6 +2010,6 @@ namespace Couatl3_UnitTest
 			}
 			return sec;
 		}
-		#endregion
+#endregion
 	}
 }

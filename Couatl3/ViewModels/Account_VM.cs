@@ -67,12 +67,13 @@ namespace Couatl3.ViewModels
 		{
 			if (SelectedTransaction != null)
 			{
-				TheAccount = ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
+				ModelService.DeleteTransaction(SelectedTransaction.TheTransaction);
 				MyTransactions.Remove(SelectedTransaction);
 				// TODO: Move the selection to the next/previous item in the list.
 				SelectedTransaction = null;
 				MyParent.NotifyNumXacts();
 				RaisePropertyChanged("Value");
+				RaisePropertyChanged("TheAccount");
 			}
 		}
 
@@ -91,7 +92,7 @@ namespace Couatl3.ViewModels
 				newXact.SecurityId = selectedTransaction.GetSecurityIdFromCombo();
 
 				// Delete the existing transaction.
-				TheAccount = ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
+				ModelService.DeleteTransaction(selectedTransaction.TheTransaction);
 				// Add the new transaction.
 				ModelService.AddTransaction(TheAccount, newXact);
 
