@@ -39,7 +39,7 @@
                                 <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="List of accounts">
                                     <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Name}" Header="Name"/>
                                     <GridViewColumn DisplayMemberBinding="{Binding TheAccount.Institution}" Header="Institution"/>
-                                    <GridViewColumn DisplayMemberBinding="{Binding Value}" Header="Value"/>
+                                    <GridViewColumn DisplayMemberBinding="{Binding Value, StringFormat=C2}" Header="Value"/>
                                 </GridView>
                             </ListView.View>
                         </ListView>
