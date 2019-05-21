@@ -12,15 +12,27 @@
         <vms:GlobalPositions_VM/>
     </UserControl.DataContext>
     <Grid>
-        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Positions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
-                <DataGridTextColumn Binding="{Binding SecurityName}" Header="Security Name"/>
-                <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
-                <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
-                <DataGridTextColumn Binding="{Binding ThePosition.SecurityId}" Header="SecurityId"/>
-                <DataGridTextColumn Binding="{Binding ThePosition.AccountId}" Header="AccountId"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <StackPanel>
+            <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Positions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
+                    <DataGridTextColumn Binding="{Binding SecurityName}" Header="Security Name"/>
+                    <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
+                    <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
+                    <DataGridTextColumn Binding="{Binding ThePosition.SecurityId}" Header="SecurityId"/>
+                    <DataGridTextColumn Binding="{Binding ThePosition.AccountId}" Header="AccountId"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <TreeView ItemsSource="{Binding Positions}">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type vms:GlobalPositions_VM}" ItemsSource="{Binding Positions}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Width="50" Text="{Binding Symbol}" />
+                            <TextBlock>Hello World!</TextBlock>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </StackPanel>
     </Grid>
 </UserControl>
