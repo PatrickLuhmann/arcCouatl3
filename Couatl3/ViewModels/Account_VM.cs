@@ -71,6 +71,9 @@ namespace Couatl3.ViewModels
 				MyTransactions.Remove(SelectedTransaction);
 				// TODO: Move the selection to the next/previous item in the list.
 				SelectedTransaction = null;
+
+				CalculateCashBalance();
+				PopulatePositions();
 				MyParent.NotifyNumXacts();
 				RaisePropertyChanged("Value");
 				RaisePropertyChanged("TheAccount");
