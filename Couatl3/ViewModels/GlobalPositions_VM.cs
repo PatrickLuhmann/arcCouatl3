@@ -41,7 +41,7 @@ namespace Couatl3.ViewModels
 					{
 						string secName = ModelService.GetSecurityNameFromId(acctPos.SecurityId);
 						string secSym = ModelService.GetSymbolFromId(acctPos.SecurityId);
-						GlobalPosition_VM glPos = new GlobalPosition_VM()
+						GlobalPosition_VM glPos = new GlobalPosition_VM(acctPos.SecurityId)
 						{
 							ThePosition = acctPos,
 							SecurityName = secName,
@@ -77,5 +77,76 @@ namespace Couatl3.ViewModels
 		public string Symbol { get; set; }
 
 		public decimal Value { get; set; }
+
+		private List<SecurityLot_VM> _secLots = new List<SecurityLot_VM>();
+		public List<SecurityLot_VM> SecLots
+		{
+			get
+			{
+				return _secLots;
+			}
+			set
+			{
+
+			}
+		}
+
+		public GlobalPosition_VM(int secId)
+		{
+			// Get the Transactions for the security.
+			List<Transaction> xacts = ModelService.GetTransactions().Where(tr => tr.SecurityId == secId).ToList();
+
+			// Create a SecLot for each Buy.
+			foreach (Transaction xact in xacts)
+			{
+				if (xact.Type == (int)ModelService.TransactionType.Buy)
+				{
+					_secLots.Add(new SecurityLot_VM
+					{
+						Date = xact.Date,
+						Quantity = xact.Quantity,
+						TotalCostBasis = xact.Value,
+						PerShareCostBasis = xact.Value / xact.Quantity,
+						// we will calculate the rest once we have final quantity.
+					});
+				}
+			}
+
+			// TODO: Back out the Sells.
+
+			// Calculate current values using the most recent price.
+			decimal price = ModelService.GetNewestPrice(secId);
+			foreach (SecurityLot_VM secLot in _secLots)
+			{
+				secLot.Value = secLot.Quantity * price;
+				secLot.NetGain = secLot.Value - secLot.TotalCostBasis;
+				secLot.PercentGain = (secLot.Value - secLot.TotalCostBasis) / secLot.TotalCostBasis;
+			}
+		}
+	}
+
+	public class SecurityLot_VM
+	{
+		public DateTime Date { get; set; }
+
+		//public string Symbol { get; set; }
+
+		//public string Name { get; set; }
+
+		public decimal Quantity { get; set; }
+
+		public decimal TotalCostBasis { get; set; }
+
+		public decimal PerShareCostBasis { get; set; }
+
+		public decimal Value { get; set; }
+		
+		// Total gain.
+		// TODO: If ever get daily prices, add a Day Gain property.
+		public decimal NetGain { get; set; }
+
+		public decimal PercentGain { get; set; }
+
+		// TODO: Add a Notes property?
 	}
 }

@@ -24,14 +24,25 @@
                 </DataGrid.Columns>
             </DataGrid>
             <TreeView ItemsSource="{Binding Positions}">
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate DataType="{x:Type vms:GlobalPositions_VM}" ItemsSource="{Binding Positions}">
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type vms:GlobalPosition_VM}" ItemsSource="{Binding SecLots}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Width="50" Text="{Binding Symbol}" />
                             <TextBlock>Hello World!</TextBlock>
                         </StackPanel>
                     </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type vms:SecurityLot_VM}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Width="100" Text="{Binding Date}" />
+                            <TextBlock Width="50" Text="{Binding Quantity}" />
+                            <TextBlock Width="50" Text="{Binding TotalCostBasis, StringFormat=C}" />
+                            <TextBlock Width="50" Text="{Binding PerShareCostBasis, StringFormat=C}" />
+                            <TextBlock Width="50" Text="{Binding Value, StringFormat=C}" />
+                            <TextBlock Width="50" Text="{Binding NetGain, StringFormat=C}" />
+                            <TextBlock Width="50" Text="{Binding PercentGain, StringFormat=P}" />
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.Resources>
             </TreeView>
         </StackPanel>
     </Grid>
