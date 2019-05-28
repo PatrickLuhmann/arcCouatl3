@@ -337,12 +337,16 @@ namespace Couatl3.Models
 						{
 							// Update the database.
 							thePos.Quantity += theXact.Quantity;
-							UpdatePosition(thePos);
+							if (thePos.Quantity == 0) // closes out short sell
+								DeletePosition(thePos);
+							else
+								UpdatePosition(thePos);
 
 							// Update the Account object.
 							int idx = theAcct.Positions.FindIndex(p => p.PositionId == thePos.PositionId);
 							theAcct.Positions.RemoveAt(idx);
-							theAcct.Positions.Add(thePos);
+							if (thePos.Quantity != 0)
+								theAcct.Positions.Add(thePos);
 						}
 
 						// Update Cash.
@@ -370,12 +374,16 @@ namespace Couatl3.Models
 						{
 							// Update the database.
 							thePos.Quantity -= theXact.Quantity;
-							UpdatePosition(thePos);
+							if (thePos.Quantity == 0)
+								DeletePosition(thePos);
+							else
+								UpdatePosition(thePos);
 
 							// Update the Account object.
 							int idx = theAcct.Positions.FindIndex(p => p.PositionId == thePos.PositionId);
 							theAcct.Positions.RemoveAt(idx);
-							theAcct.Positions.Add(thePos);
+							if (thePos.Quantity != 0)
+								theAcct.Positions.Add(thePos);
 						}
 
 						// Update Cash.
@@ -444,8 +452,23 @@ namespace Couatl3.Models
 					// Find the Position that this Buy affects.
 					thePos = theAcct.Positions.Find(p => p.SecurityId == theXact.SecurityId);
 
-					// Back out the shares that were added.
-					thePos.Quantity -= theXact.Quantity;
+					if (thePos == null)
+					{
+						// If there is no position, then this Buy is for a position that was closed and deleted.
+						// Thus we need to add a new one.
+						thePos = new Position
+						{
+							AccountId = theAcct.AccountId,
+							SecurityId = theXact.SecurityId,
+							Quantity = -1 * theXact.Quantity, // creates a short sell
+						};
+						AddPosition(theAcct, thePos);
+					}
+					else
+					{
+						// Back out the shares that were added.
+						thePos.Quantity -= theXact.Quantity;
+					}
 
 					if (thePos.Quantity == 0)
 						DeletePosition(thePos);
@@ -456,8 +479,23 @@ namespace Couatl3.Models
 					// Find the Position that this Sell affects.
 					thePos = theAcct.Positions.Find(p => p.SecurityId == theXact.SecurityId);
 
-					// Add back the shares that were removed.
-					thePos.Quantity += theXact.Quantity;
+					if (thePos == null)
+					{
+						// If there is no position, then this Sell is for a position that was closed and deleted.
+						// Thus we need to add a new one.
+						thePos = new Position
+						{
+							AccountId = theAcct.AccountId,
+							SecurityId = theXact.SecurityId,
+							Quantity = theXact.Quantity,
+						};
+						AddPosition(theAcct, thePos);
+					}
+					else
+					{
+						// Add back the shares that were removed.
+						thePos.Quantity += theXact.Quantity;
+					}
 
 					// TODO: Revisit the handling of short sells.
 					// It is possible that this Sell transaction was the only one for this position.

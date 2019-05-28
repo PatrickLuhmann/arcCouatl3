@@ -39,6 +39,59 @@ namespace Couatl3_UnitTest.ViewModels
 		}
 
 		[TestMethod]
+		public void OneAccountWithNoPositionsDueToSales()
+		{
+			// ASSEMBLE
+			Account theAcct = ModelService_UT.AddAccount("Test Account Name", "Test Institution Name");
+
+			// Add the transaction that creates the position.
+			Security theSec1 = ModelService_UT.AddSecurity("OAWNPDTS", "One Account No Positions Sales");
+			DateTime sec1Date = DateTime.Parse("2018-05-28");
+			decimal sec1Qty = 100.0M;
+			decimal sec1Value = 2204.48M;
+			Transaction sec1Xact = new Transaction
+			{
+				Date = sec1Date,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec1.SecurityId,
+				Quantity = sec1Qty,
+				Value = sec1Value,
+				Fee = 21.12M,
+			};
+			ModelService.AddTransaction(theAcct, sec1Xact);
+
+			// Add the transactions that remove the position.
+			sec1Xact = new Transaction
+			{
+				Date = DateTime.Parse("2018-08-13"),
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec1.SecurityId,
+				Quantity = 40,
+				Value = 1000.00M,
+				Fee = 4.34M,
+			};
+			ModelService.AddTransaction(theAcct, sec1Xact);
+			sec1Xact = new Transaction
+			{
+				Date = DateTime.Parse("2019-04-10"),
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec1.SecurityId,
+				Quantity = 60,
+				Value = 1500.00M,
+				Fee = 4.48M,
+			};
+			ModelService.AddTransaction(theAcct, sec1Xact);
+
+			// ACT
+			GlobalPositions_VM testVM = new GlobalPositions_VM();
+			List<GlobalPosition_VM> positions = testVM.Positions;
+
+			// ASSERT
+			Assert.IsNotNull(positions);
+			Assert.AreEqual(0, positions.Count);
+		}
+
+		[TestMethod]
 		public void OneAccountWithPositions()
 		{
 			// ASSEMBLE
