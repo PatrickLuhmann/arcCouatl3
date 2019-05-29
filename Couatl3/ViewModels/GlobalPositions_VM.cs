@@ -9,22 +9,22 @@ namespace Couatl3.ViewModels
 {
 	public class GlobalPositions_VM
 	{
-		private List<GlobalPosition_VM> positions;
+		private List<GlobalPosition_VM> _Positions;
 		public List<GlobalPosition_VM> Positions
 		{
 			get
 			{
-				return positions;
+				return _Positions;
 			}
 			private set
 			{
-				positions = value;
+				_Positions = value;
 			}
 		}
 
 		public GlobalPositions_VM()
 		{
-			positions = new List<GlobalPosition_VM>();
+			_Positions = new List<GlobalPosition_VM>();
 
 			// Get the open accounts.
 			List<Account> accounts = ModelService.GetAccounts(true);
@@ -36,7 +36,7 @@ namespace Couatl3.ViewModels
 
 				foreach (Position acctPos in account_positions)
 				{
-					GlobalPosition_VM pos = positions.Find(p => p.ThePosition.SecurityId == acctPos.SecurityId);
+					GlobalPosition_VM pos = _Positions.Find(p => p.ThePosition.SecurityId == acctPos.SecurityId);
 					if (pos == null)
 					{
 						string secName = ModelService.GetSecurityNameFromId(acctPos.SecurityId);
@@ -50,7 +50,7 @@ namespace Couatl3.ViewModels
 						// Clear invalid properties.
 						glPos.ThePosition.Account = null;
 						glPos.ThePosition.AccountId = 0;
-						positions.Add(glPos);
+						_Positions.Add(glPos);
 					}
 					else
 					{
@@ -61,7 +61,7 @@ namespace Couatl3.ViewModels
 
 			// Determine the current value of each position, now
 			// that we have the final quantity for each of them.
-			foreach (var pos in positions)
+			foreach (var pos in _Positions)
 			{
 				pos.Value = pos.ThePosition.Quantity * ModelService.GetNewestPrice(pos.ThePosition.SecurityId);
 			}
@@ -78,12 +78,12 @@ namespace Couatl3.ViewModels
 
 		public decimal Value { get; set; }
 
-		private List<SecurityLot_VM> _secLots = new List<SecurityLot_VM>();
+		private List<SecurityLot_VM> _SecLots = new List<SecurityLot_VM>();
 		public List<SecurityLot_VM> SecLots
 		{
 			get
 			{
-				return _secLots;
+				return _SecLots;
 			}
 			set
 			{
@@ -101,7 +101,7 @@ namespace Couatl3.ViewModels
 			{
 				if (xact.Type == (int)ModelService.TransactionType.Buy)
 				{
-					_secLots.Add(new SecurityLot_VM
+					_SecLots.Add(new SecurityLot_VM
 					{
 						Date = xact.Date,
 						Quantity = xact.Quantity,
@@ -112,11 +112,26 @@ namespace Couatl3.ViewModels
 				}
 			}
 
-			// TODO: Back out the Sells.
+			// Back out the Sells.
+			// TODO: Use LotAssignments (using FIFO for now).
+			foreach (Transaction xact in xacts)
+			{
+				if (xact.Type == (int)ModelService.TransactionType.Sell)
+				{
+					if (xact.Quantity < _SecLots[0].Quantity)
+					{
+						// Must do this before Quantity is altered.
+						_SecLots[0].TotalCostBasis = ((_SecLots[0].Quantity - xact.Quantity) / _SecLots[0].Quantity) * _SecLots[0].TotalCostBasis;
+						// NOTE: Per-share cost basis doesn't change due to this Sell.
+						// Subtract the shares from the affected Lot.
+						_SecLots[0].Quantity -= xact.Quantity;
+					}
+				}
+			}
 
 			// Calculate current values using the most recent price.
 			decimal price = ModelService.GetNewestPrice(secId);
-			foreach (SecurityLot_VM secLot in _secLots)
+			foreach (SecurityLot_VM secLot in _SecLots)
 			{
 				secLot.Value = secLot.Quantity * price;
 				secLot.NetGain = secLot.Value - secLot.TotalCostBasis;

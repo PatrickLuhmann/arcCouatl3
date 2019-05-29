@@ -112,20 +112,35 @@ namespace Couatl3_UnitTest.ViewModels
 				Fee = 21.12M,
 			};
 			ModelService.AddTransaction(theAcct, sec1Xact);
+
+			// For the second position, sell some after the buy.
 			Security theSec2 = ModelService_UT.AddSecurity("OAWP2", "One Account With Positions 2");
-			DateTime sec2Date = DateTime.Parse("2018-05-13");
-			decimal sec2Qty = 5.01M;
-			decimal sec2Value = 61.48M;
-			Transaction sec2Xact = new Transaction
+			DateTime sec2BuyDate = DateTime.Parse("2018-05-13");
+			decimal sec2BuyQty = 25.0M;
+			decimal sec2BuyValue = 2500.00M;
+			Transaction sec2BuyXact = new Transaction
 			{
-				Date = sec2Date,
+				Date = sec2BuyDate,
 				Type = (int)ModelService.TransactionType.Buy,
 				SecurityId = theSec2.SecurityId,
-				Quantity = sec2Qty,
-				Value = sec2Value,
+				Quantity = sec2BuyQty,
+				Value = sec2BuyValue,
 				Fee = 4.34M,
 			};
-			ModelService.AddTransaction(theAcct, sec2Xact);
+			ModelService.AddTransaction(theAcct, sec2BuyXact);
+			DateTime sec2SellDate = DateTime.Parse("2018-05-20");
+			decimal sec2SellQty = 5.0M;
+			decimal sec2SellValue = 5.30M;
+			Transaction sec2SellXact = new Transaction
+			{
+				Date = sec2SellDate,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec2.SecurityId,
+				Quantity = sec2SellQty,
+				Value = sec2SellValue,
+				Fee = 1.23M,
+			};
+			ModelService.AddTransaction(theAcct, sec2SellXact);
 
 			// Update the prices.
 			decimal sec1Mrp = 2.43M;
@@ -135,52 +150,56 @@ namespace Couatl3_UnitTest.ViewModels
 
 			// ACT
 			GlobalPositions_VM testVM = new GlobalPositions_VM();
-			List<GlobalPosition_VM> positions = testVM.Positions;
+			List<GlobalPosition_VM> positionVMs = testVM.Positions;
 
 			// ASSERT
-			GlobalPosition_VM actPos;
-			Assert.IsNotNull(positions);
-			Assert.AreEqual(2, positions.Count);
-			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
-			Assert.AreEqual(theSec1.Name, actPos.SecurityName);
-			Assert.AreEqual(theSec1.Symbol, actPos.Symbol);
-			Assert.AreEqual(sec1Qty, actPos.ThePosition.Quantity);
-			Assert.AreEqual(sec1Qty * sec1Mrp, actPos.Value);
-			Assert.AreEqual(0, actPos.ThePosition.AccountId);
-			Assert.AreEqual(null, actPos.ThePosition.Account);
-			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2.SecurityId);
-			Assert.AreEqual(theSec2.Name, actPos.SecurityName);
-			Assert.AreEqual(theSec2.Symbol, actPos.Symbol);
-			Assert.AreEqual(sec2Qty, actPos.ThePosition.Quantity);
-			Assert.AreEqual(sec2Qty * sec2Mrp, actPos.Value);
-			Assert.AreEqual(0, actPos.ThePosition.AccountId);
-			Assert.AreEqual(null, actPos.ThePosition.Account);
+			GlobalPosition_VM actPosVM;
+			Assert.IsNotNull(positionVMs);
+			Assert.AreEqual(2, positionVMs.Count);
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
+			Assert.AreEqual(theSec1.Name, actPosVM.SecurityName);
+			Assert.AreEqual(theSec1.Symbol, actPosVM.Symbol);
+			Assert.AreEqual(sec1Qty, actPosVM.ThePosition.Quantity);
+			Assert.AreEqual(sec1Qty * sec1Mrp, actPosVM.Value);
+			Assert.AreEqual(0, actPosVM.ThePosition.AccountId);
+			Assert.AreEqual(null, actPosVM.ThePosition.Account);
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec2.SecurityId);
+			Assert.AreEqual(theSec2.Name, actPosVM.SecurityName);
+			Assert.AreEqual(theSec2.Symbol, actPosVM.Symbol);
+			Assert.AreEqual(sec2BuyQty - sec2SellQty, actPosVM.ThePosition.Quantity);
+			Assert.AreEqual((sec2BuyQty - sec2SellQty) * sec2Mrp, actPosVM.Value);
+			Assert.AreEqual(0, actPosVM.ThePosition.AccountId);
+			Assert.AreEqual(null, actPosVM.ThePosition.Account);
 
 			// Check the lots.
-			SecurityLot_VM actSecLot;
-			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
-			Assert.IsNotNull(actPos.SecLots);
-			Assert.AreEqual(1, actPos.SecLots.Count);
-			actSecLot = actPos.SecLots[0];
-			Assert.AreEqual(sec1Date, actSecLot.Date);
-			Assert.AreEqual(sec1Qty, actSecLot.Quantity);
-			Assert.AreEqual(sec1Value, actSecLot.TotalCostBasis);
-			Assert.AreEqual(sec1Value / sec1Qty, actSecLot.PerShareCostBasis);
-			Assert.AreEqual(sec1Qty * sec1Mrp, actSecLot.Value);
-			Assert.AreEqual((sec1Qty * sec1Mrp) - sec1Value, actSecLot.NetGain);
-			Assert.AreEqual(((sec1Qty * sec1Mrp) - sec1Value) / sec1Value, actSecLot.PercentGain);
+			SecurityLot_VM actSecLotVM;
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
+			Assert.IsNotNull(actPosVM.SecLots);
+			Assert.AreEqual(1, actPosVM.SecLots.Count);
+			actSecLotVM = actPosVM.SecLots[0];
+			Assert.AreEqual(sec1Date, actSecLotVM.Date);
+			Assert.AreEqual(sec1Qty, actSecLotVM.Quantity);
+			Assert.AreEqual(sec1Value, actSecLotVM.TotalCostBasis);
+			Assert.AreEqual(sec1Value / sec1Qty, actSecLotVM.PerShareCostBasis);
+			Assert.AreEqual(sec1Qty * sec1Mrp, actSecLotVM.Value);
+			Assert.AreEqual((sec1Qty * sec1Mrp) - sec1Value, actSecLotVM.NetGain);
+			Assert.AreEqual(((sec1Qty * sec1Mrp) - sec1Value) / sec1Value, actSecLotVM.PercentGain);
 
-			actPos = positions.Find(p => p.ThePosition.SecurityId == theSec2.SecurityId);
-			Assert.IsNotNull(actPos.SecLots);
-			Assert.AreEqual(1, actPos.SecLots.Count);
-			actSecLot = actPos.SecLots[0];
-			Assert.AreEqual(sec2Date, actSecLot.Date);
-			Assert.AreEqual(sec2Qty, actSecLot.Quantity);
-			Assert.AreEqual(sec2Value, actSecLot.TotalCostBasis);
-			Assert.AreEqual(sec2Value / sec2Qty, actSecLot.PerShareCostBasis);
-			Assert.AreEqual(sec2Qty * sec2Mrp, actSecLot.Value);
-			Assert.AreEqual((sec2Qty * sec2Mrp) - sec2Value, actSecLot.NetGain);
-			Assert.AreEqual(((sec2Qty * sec2Mrp) - sec2Value) / sec2Value, actSecLot.PercentGain);
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec2.SecurityId);
+			Assert.IsNotNull(actPosVM.SecLots);
+			Assert.AreEqual(1, actPosVM.SecLots.Count);
+			actSecLotVM = actPosVM.SecLots[0];
+			Assert.AreEqual(sec2BuyDate, actSecLotVM.Date);
+			Assert.AreEqual(sec2BuyQty - sec2SellQty, actSecLotVM.Quantity);
+			decimal expTCB = 2000.00M;
+			Assert.AreEqual(expTCB, actSecLotVM.TotalCostBasis);
+			Assert.AreEqual(sec2BuyValue / sec2BuyQty, actSecLotVM.PerShareCostBasis);
+			decimal expValue = (sec2BuyQty - sec2SellQty) * sec2Mrp;
+			Assert.AreEqual(expValue, actSecLotVM.Value);
+			decimal expNetGain = expValue - expTCB;
+			Assert.AreEqual(expNetGain, actSecLotVM.NetGain);
+			decimal expPerGain = (expValue - expTCB) / expTCB;
+			Assert.AreEqual(expPerGain, actSecLotVM.PercentGain);
 		}
 
 		[TestMethod]
