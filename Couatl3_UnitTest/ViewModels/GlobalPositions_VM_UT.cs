@@ -203,6 +203,112 @@ namespace Couatl3_UnitTest.ViewModels
 		}
 
 		[TestMethod]
+		public void OneAccountSellAffectsMultipleLots()
+		{
+			// ASSEMBLE
+			Account theAcct = ModelService_UT.AddAccount("Test Account Name", "Test Institution Name");
+
+			// Add the transactions that create the position.
+			Security theSec1 = ModelService_UT.AddSecurity("OAWP1", "One Account With Positions 1");
+			// Lot #1
+			DateTime lot1Date = DateTime.Parse("2018-05-13");
+			decimal lot1Qty = 100.00M;
+			decimal lot1Value = 2000.00M;
+			Transaction lot1Xact = new Transaction
+			{
+				Date = lot1Date,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec1.SecurityId,
+				Quantity = lot1Qty,
+				Value = lot1Value,
+				Fee = 0,
+			};
+			ModelService.AddTransaction(theAcct, lot1Xact);
+			// Lot #2
+			DateTime lot2Date = DateTime.Parse("2018-05-14");
+			decimal lot2Qty = 200.00M;
+			decimal lot2Value = 3000.00M;
+			Transaction lot2Xact = new Transaction
+			{
+				Date = lot2Date,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec1.SecurityId,
+				Quantity = lot2Qty,
+				Value = lot2Value,
+				Fee = 0,
+			};
+			ModelService.AddTransaction(theAcct, lot2Xact);
+			// Lot #3
+			DateTime lot3Date = DateTime.Parse("2018-05-15");
+			decimal lot3Qty = 300.00M;
+			decimal lot3Value = 4000.00M;
+			Transaction lot3Xact = new Transaction
+			{
+				Date = lot3Date,
+				Type = (int)ModelService.TransactionType.Buy,
+				SecurityId = theSec1.SecurityId,
+				Quantity = lot3Qty,
+				Value = lot3Value,
+				Fee = 0,
+			};
+			ModelService.AddTransaction(theAcct, lot3Xact);
+
+			// Now a Sell that spans all three lots.
+			DateTime sellDate = DateTime.Parse("2019-02-27");
+			decimal sellQty = 500.00M;
+			decimal sellValue = 12500.00M;
+			Transaction sellXact = new Transaction
+			{
+				Date = sellDate,
+				Type = (int)ModelService.TransactionType.Sell,
+				SecurityId = theSec1.SecurityId,
+				Quantity = sellQty,
+				Value = sellValue,
+				Fee = 0,
+			};
+			ModelService.AddTransaction(theAcct, sellXact);
+
+			// Update the prices.
+			decimal sec1Mrp = 30.00M;
+			ModelService.AddPrice(theSec1.SecurityId, DateTime.Today, sec1Mrp, true);
+
+			// ACT
+			GlobalPositions_VM testVM = new GlobalPositions_VM();
+			List<GlobalPosition_VM> positionVMs = testVM.Positions;
+
+			// ASSERT
+			Assert.IsNotNull(positionVMs);
+			Assert.AreEqual(1, positionVMs.Count);
+			GlobalPosition_VM actPosVM;
+
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
+			Assert.AreEqual(theSec1.Name, actPosVM.SecurityName);
+			Assert.AreEqual(theSec1.Symbol, actPosVM.Symbol);
+			Assert.AreEqual(100.0M, actPosVM.ThePosition.Quantity);
+			Assert.AreEqual(100 * sec1Mrp, actPosVM.Value);
+			Assert.AreEqual(0, actPosVM.ThePosition.AccountId);
+			Assert.AreEqual(null, actPosVM.ThePosition.Account);
+
+			// Check the lots.
+			SecurityLot_VM actSecLotVM;
+			actPosVM = positionVMs.Find(p => p.ThePosition.SecurityId == theSec1.SecurityId);
+			Assert.IsNotNull(actPosVM.SecLots);
+			Assert.AreEqual(1, actPosVM.SecLots.Count);
+			actSecLotVM = actPosVM.SecLots[0];
+			Assert.AreEqual(lot3Date, actSecLotVM.Date);
+			Assert.AreEqual(100, actSecLotVM.Quantity);
+			decimal expTCB = lot3Value / 3;
+			Assert.AreEqual(expTCB, actSecLotVM.TotalCostBasis);
+			Assert.AreEqual(lot3Value / lot3Qty, actSecLotVM.PerShareCostBasis);
+			decimal expValue = 100 * sec1Mrp;
+			Assert.AreEqual(expValue, actSecLotVM.Value);
+			decimal expNetGain = expValue - expTCB;
+			Assert.AreEqual(expNetGain, actSecLotVM.NetGain);
+			decimal expPerGain = (expValue - expTCB) / expTCB;
+			Assert.AreEqual(expPerGain, actSecLotVM.PercentGain);
+		}
+
+		[TestMethod]
 		public void TwoAccountsWithDifferentPositions()
 		{
 			// ASSEMBLE

@@ -114,18 +114,35 @@ namespace Couatl3.ViewModels
 
 			// Back out the Sells.
 			// TODO: Use LotAssignments (using FIFO for now).
+			// TODO: This code doesn't take Account boundaries into account. The LotAssignment object
+			// provides an equivalent. Until then need to do it manually.
 			foreach (Transaction xact in xacts)
 			{
 				if (xact.Type == (int)ModelService.TransactionType.Sell)
 				{
-					if (xact.Quantity < _SecLots[0].Quantity)
+					decimal qty = xact.Quantity;
+					do
 					{
-						// Must do this before Quantity is altered.
-						_SecLots[0].TotalCostBasis = ((_SecLots[0].Quantity - xact.Quantity) / _SecLots[0].Quantity) * _SecLots[0].TotalCostBasis;
-						// NOTE: Per-share cost basis doesn't change due to this Sell.
-						// Subtract the shares from the affected Lot.
-						_SecLots[0].Quantity -= xact.Quantity;
-					}
+						if (qty < _SecLots[0].Quantity)
+						{
+							// Must do this before Quantity is altered.
+							// NOTE: Must do multiplication before division to get correct value.
+							_SecLots[0].TotalCostBasis = ((_SecLots[0].Quantity - qty) * _SecLots[0].TotalCostBasis) / _SecLots[0].Quantity;
+							// NOTE: Per-share cost basis doesn't change due to this Sell.
+							// Subtract the shares from the affected Lot.
+							_SecLots[0].Quantity -= qty;
+
+							// This Sell has been completely handled, so break out of the loop.
+							break;
+						}
+						else
+						{
+							// The affected Lot is completely consumed, so remove it.
+							// Adjust qty for comparison to the next lot in the list.
+							qty -= _SecLots[0].Quantity;
+							_SecLots.RemoveAt(0);
+						}
+					} while (true);
 				}
 			}
 
