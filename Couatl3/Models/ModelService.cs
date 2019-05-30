@@ -424,6 +424,106 @@ namespace Couatl3.Models
 			// Give the transaction to its account.
 			theAcct.Transactions.Add(theXact);
 			UpdateAccount(theAcct);
+
+			// For a Sell transaction, handle lot assignment.
+			// NOTE: This must be done after the Sell transaction has been added to the database.
+			if (theXact.Type == (int)TransactionType.Sell)
+			{
+				// Assign the lots.
+				// TODO: Replace forced FIFO with user-selected lots.
+				AssignLots(theAcct, theXact);
+			}
+		}
+
+		private class Lot
+		{
+			public decimal Quantity;
+			public int BuyTransactionId;
+		}
+
+		static private void AssignLots(Account theAcct, Transaction theXact)
+		{
+			List<Lot> lots = new List<Lot>();
+
+			// Create the starting lots based on Buys.
+			foreach (Transaction xact in theAcct.Transactions)
+			{
+				if (xact.Type == (int)ModelService.TransactionType.Buy)
+				{
+					lots.Add(new Lot
+					{
+						Quantity = xact.Quantity,
+						BuyTransactionId = xact.TransactionId
+					});
+				}
+			}
+
+			// Modify lots based on existing Sells and their LotAssignments.
+			foreach (Transaction xact in theAcct.Transactions)
+			{
+				if (xact.Type == (int)ModelService.TransactionType.Sell)
+				{
+					// Get the LotAssignment objects for this Sell.
+					List<LotAssignment> assignments = GetLotAssignments()
+						.Where(la => la.SellTransactionId == xact.TransactionId)
+						.ToList();
+
+					// Apply the assignments to the lots.
+					foreach (LotAssignment assign in assignments)
+					{
+						Lot target = lots.Find(l => l.BuyTransactionId == assign.BuyTransactionId);
+						target.Quantity -= assign.Quantity;
+					}
+				}
+			}
+
+			// Apply the new Sell to the lots that remain.
+			decimal qty = theXact.Quantity;
+			do
+			{
+				// Get the first lot that has a non-0 quantity.
+				Lot target = lots.Find(l => l.Quantity != 0);
+
+				if (qty < target.Quantity)
+				{
+					using (var db = new CouatlContext())
+					{
+//						Transaction buyXact = theAcct.Transactions.Find(t => t.TransactionId == target.BuyTransactionId);
+						Transaction buyXact = db.Transactions.Include(t => t.Account).Single(t => t.TransactionId == target.BuyTransactionId);
+						Transaction sellXact = db.Transactions.Include(t => t.Account).Single(t => t.TransactionId == theXact.TransactionId);
+						LotAssignment theLot = new LotAssignment
+						{
+							Quantity = qty,
+							BuyTransactionId = target.BuyTransactionId,
+							BuyTransaction = buyXact,
+							SellTransactionId = theXact.TransactionId,
+							SellTransaction = theXact,
+						};
+
+						db.LotAssignments.Add(theLot);
+						db.SaveChanges();
+					}
+					target.Quantity -= qty;
+					break;
+				}
+				else
+				{
+					LotAssignment theLot = new LotAssignment
+					{
+						Quantity = target.Quantity,
+						BuyTransactionId = target.BuyTransactionId,
+						SellTransactionId = theXact.TransactionId,
+						SellTransaction = theXact,
+					};
+					using (var db = new CouatlContext())
+					{
+						db.LotAssignments.Add(theLot);
+						db.SaveChanges();
+					}
+					qty -= target.Quantity;
+					target.Quantity = 0;
+				}
+			} while (qty != 0);
 		}
 
 		// TODO: Make this private because the user should be doing delete/add; it is too difficult to change Type.
@@ -534,6 +634,19 @@ namespace Couatl3.Models
 			{
 				theList = db.Transactions
 					.Include(t => t.Account).ThenInclude(a => a.Positions)
+					.ToList();
+			}
+			return theList;
+		}
+
+		static public List<LotAssignment> GetLotAssignments()
+		{
+			List<LotAssignment> theList;
+			using (var db = new CouatlContext())
+			{
+				theList = db.LotAssignments
+					.Include(la => la.BuyTransaction).ThenInclude(t => t.Account)
+					.Include(la => la.SellTransaction).ThenInclude(t => t.Account)
 					.ToList();
 			}
 			return theList;
