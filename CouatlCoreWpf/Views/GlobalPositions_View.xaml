@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="CouatlCoreWpf.Views.GlobalPositions_View"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CouatlCoreWpf.Views"
+             xmlns:vms="clr-namespace:CouatlCoreWpf.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <vms:GlobalPositions_VM/>
+    </UserControl.DataContext>
+    <Grid>
+        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding Positions}" CanUserAddRows="False" CanUserResizeRows="False" CanUserDeleteRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Symbol}" Header="Symbol"/>
+                <DataGridTextColumn Binding="{Binding SecurityName}" Header="Security Name"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.Quantity}" Header="Quantity"/>
+                <DataGridTextColumn Binding="{Binding Value, StringFormat=C2}" Header="Value"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.SecurityId}" Header="SecurityId"/>
+                <DataGridTextColumn Binding="{Binding ThePosition.AccountId}" Header="AccountId"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

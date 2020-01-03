@@ -158,6 +158,7 @@ namespace Couatl3.ViewModels
 			}
 
 			// Tell the View to redraw the table.
+			//TODO: Isn't this spelled wrong?
 			RaisePropertyChanged("MyPosition");
 		}
 
